@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>交通轨迹地图</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Leaflet CSS 和 JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <style>
+    body { margin: 0; }
+    #map { height: 100vh; width: 100vw; }
+    .legend { 
+      padding: 10px; 
+      background: white; 
+      border-radius: 5px; 
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <script>
+    // Initialize map with better default view
+    var map = L.map('map').setView([25, 110], 4); // Better center for all points
+    
+    // Add tile layer with proper attribution
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 18,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    // City coordinates (corrected to [lat, lng] format)
+    var cityCoords = {
+      "宁波": [29.8746, 121.5503],
+      "杭州东": [30.2594, 120.2194],
+      "上海虹桥": [31.2000, 121.3270],
+      "香港西九龙": [22.3080, 114.1594],
+      "龙洞堡T3": [26.5333, 106.8000],
+      "萧山T4": [30.2295, 120.4345],
+      "樟宜T1": [1.3570, 103.9940],
+      "吉隆坡": [3.1390, 101.6869],
+      "新加坡": [1.3521, 103.8198],
+      "怡保": [4.5975, 101.0844],
+      "北海": [5.4172, 100.3881]
+    };
+
+    // Add city markers with custom icons
+    Object.keys(cityCoords).forEach(function(city) {
+      var coords = cityCoords[city];
+      L.marker(coords)
+        .addTo(map)
+        .bindPopup("<b>" + city + "</b><br>坐标: " + coords[0].toFixed(4) + ", " + coords[1].toFixed(4));
+    });
+
+    // Define routes with different colors
+    var routes = [
+      {path: ["宁波", "杭州东"], color: 'red'},
+      {path: ["杭州东", "香港西九龙"], color: 'blue'},
+      {path: ["上海虹桥", "杭州东"], color: 'green'},
+      {path: ["杭州东", "上海虹桥"], color: 'green'},
+      {path: ["龙洞堡T3", "萧山T4"], color: 'purple'},
+      {path: ["萧山T4", "龙洞堡T3"], color: 'purple'},
+      {path: ["樟宜T1", "萧山T4"], color: 'orange'},
+      {path: ["吉隆坡", "新加坡"], color: 'brown'},
+      {path: ["怡保", "吉隆坡"], color: 'pink'},
+      {path: ["北海", "怡保"], color: 'gray'}
+    ];
+    
+    // Draw routes
+    routes.forEach(function(route) {
+      var from = cityCoords[route.path[0]];
+      var to = cityCoords[route.path[1]];
+      if (from && to) {
+        var polyline = L.polyline([from, to], { 
+          color: route.color,
+          weight: 3,
+          opacity: 0.7
+        }).addTo(map);
+        polyline.bindPopup(route.path[0] + " → " + route.path[1]);
+      } else {
+        console.warn("缺少坐标: ", route.path);
+      }
+    });
+
+    // Add legend
+    var legend = L.control({position: 'bottomright'});
+    legend.onAdd = function(map) {
+      var div = L.DomUtil.create('div', 'legend');
+      div.innerHTML = '<h4>交通路线图</h4><p>不同颜色代表不同路线</p>';
+      return div;
+    };
+    legend.addTo(map);
+
+    // Auto-fit map to show all markers
+    var markers = [];
+    Object.keys(cityCoords).forEach(function(city) {
+      markers.push(L.latLng(cityCoords[city]));
+    });
+    map.fitBounds(L.latLngBounds(markers), {padding: [50, 50]});
+  </script>
+</body>
+</html>

@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>交通轨迹地图</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Leaflet CSS 和 JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <style>
+    body { margin: 0; }
+    #map { height: 100vh; width: 100vw; }
+    .legend { 
+      padding: 10px; 
+      background: white; 
+      border-radius: 5px; 
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <script>
+    // Initialize map with better default view
+    var map = L.map('map').setView([30, 110], 4); // Better center for all points
+    
+    // Add tile layer with proper attribution
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 18,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    // City coordinates (in [lat, lng] format)
+    var cityCoords = {
+      // Railway Stations (火车站)
+      "宁波": [29.8669, 121.5404],  // Ningbo Railway Station
+      "杭州东": [30.2925, 120.2119],  // Hangzhou East Railway Station
+      "杭州西": [30.2966, 119.9989],  // Hangzhou West Railway Station
+      "上海虹桥": [31.1945, 121.3188],  // Shanghai Hongqiao Railway Station
+      "上海南": [31.1547, 121.4298],  // Shanghai South Railway Station
+      "香港西九龙": [22.3047, 114.1614],  // Hong Kong West Kowloon Station
+      "南昌西": [28.6099, 115.8644],  // Nanchang West Railway Station
+      "福州": [26.1167, 119.3081],  // Fuzhou Railway Station
+      "北京南": [39.8650, 116.3785],  // Beijing South Railway Station
+      "北京北": [39.9425, 116.3536],  // Beijing North Railway Station
+      "北京": [39.9024, 116.4274],  // Beijing Railway Station
+      "台州西站": [28.6588, 121.4229],  // Taizhou West Railway Station
+      "千岛湖站": [29.6086, 119.0414],  // Qiandao Lake Railway Station
+      "宁海": [29.3000, 121.4200],  // Ninghai Railway Station
+      "徐州东": [34.2694, 117.2064],  // Xuzhou East Railway Station
+      "南京南": [31.9744, 118.8040],  // Nanjing South Railway Station
+      "南京": [32.0886, 118.7969],  // Nanjing Railway Station
+      "龙岩": [25.0751, 117.0174],  // Longyan Railway Station
+      "青岛北": [36.1694, 120.3824],  // Qingdao North Railway Station
+      "青岛": [36.0671, 120.3826],  // Qingdao Railway Station
+      "大同南": [40.0394, 113.3000],  // Datong South Railway Station
+      "广州": [23.1482, 113.2644],  // Guangzhou Railway Station
+      "杭州南": [30.0686, 120.3100],  // Hangzhou South Railway Station
+      "金华": [29.0790, 119.6474],  // Jinhua Railway Station
+      "长沙南": [28.1469, 113.0645],  // Changsha South Railway Station
+      "昆明南": [24.8800, 102.8330],  // Kunming South Railway Station
+      "温州南": [27.9086, 120.5894],  // Wenzhou South Railway Station
+      "桐乡": [30.6300, 120.5400],  // Tongxiang Railway Station
+      "温岭": [28.3719, 121.3597],  // Wenling Railway Station
+      "台州": [28.6588, 121.4229],  // Taizhou Railway Station
+      "常州": [31.7797, 119.9540],  // Changzhou Railway Station
+      "天津": [39.1367, 117.2056],  // Tianjin Railway Station
+      "拉萨": [29.6259, 91.1384],  // Lhasa Railway Station
+      "日喀则": [29.2675, 88.8823],  // Shigatse Railway Station
+      "吉林": [43.8379, 126.5496],  // Jilin Railway Station
+      "舒兰": [44.4071, 126.9476],  // Shulan Railway Station
+      "长春": [43.9054, 125.3255],  // Changchun Railway Station
+      "乌兰浩特": [46.0833, 122.0667],  // Ulanhot Railway Station
+      "白城": [45.6196, 122.8387],  // Baicheng Railway Station
+      "海拉尔": [49.2116, 119.7666],  // Hailar Railway Station
+      "大连北": [39.0151, 121.5389],  // Dalian North Railway Station
+      "苍南": [27.5183, 120.4258],  // Cangnan Railway Station
+      "沙坪坝": [29.5410, 106.4560],  // Shapingba Railway Station (Chongqing)
+      "六盘水": [26.5959, 104.8329],  // Liupanshui Railway Station
+      "贵阳北": [26.6512, 106.6306],  // Guiyang North Railway Station
+      "重庆西": [29.5029, 106.4335],  // Chongqing West Railway Station
+      "西双版纳": [21.9737, 100.7656],  // Xishuangbanna Railway Station (中老铁路)
+      
+      // Airports (机场，含航站楼)
+      "龙洞堡T3": [26.5385, 106.8007],  // Guiyang Longdongbao Airport Terminal 3
+      "萧山T4": [30.2350, 120.4340],  // Hangzhou Xiaoshan Airport Terminal 4
+      "萧山T3": [30.2350, 120.4340],  // Hangzhou Xiaoshan Airport Terminal 3
+      "樟宜T1": [1.3594, 103.9895],  // Singapore Changi Airport Terminal 1
+      "西双版纳嘎洒": [21.9737, 100.7656],  // Xishuangbanna Gasa Airport
+      "北京首都": [40.0799, 116.6031],  // Beijing Capital Airport
+      "北京大兴": [39.5098, 116.4109],  // Beijing Daxing Airport
+      "宁波栎社": [29.8267, 121.4619],  // Ningbo Lishe Airport
+      "广州白云": [23.3924, 113.2988],  // Guangzhou Baiyun Airport
+      "乌鲁木齐地窝堡": [43.9071, 87.4742],  // Urumqi Diwopu Airport
+      "喀什徕宁": [39.4704, 75.9898],  // Kashgar Airport
+      "拉萨贡嘎": [29.2975, 90.9119],  // Lhasa Gonggar Airport
+      "成都双流": [30.5785, 103.9467],  // Chengdu Shuangliu Airport
+      "上海浦东": [31.1434, 121.8052],  // Shanghai Pudong Airport
+      
+      // International locations (国际交通点)
+      "吉隆坡": [3.1341, 101.6869],  // Kuala Lumpur (KL Sentral)
+      "新加坡": [1.3521, 103.8198],  // Singapore City
+      "怡保": [4.5975, 101.0844],  // Ipoh Railway Station
+      "北海": [5.4172, 100.3881],  // Butterworth Railway Station
+      "巴东勿刹": [6.6639, 100.3217],  // Padang Besar Railway Station
+      "曼谷": [13.7563, 100.5018],  // Bangkok (Hua Lamphong)
+      "清迈": [18.7061, 98.9817],  // Chiang Mai Railway Station
+      "清莱": [19.9105, 99.8406],  // Chiang Rai Bus Terminal
+      "琅勃拉邦": [19.8834, 102.1347],  // Luang Prabang Railway Station
+      "会晒": [20.2583, 100.4128]  // Huay Xai (boat pier)
+    };
+
+
+    // Add city markers with custom icons
+    Object.keys(cityCoords).forEach(function(city) {
+      var coords = cityCoords[city];
+      L.marker(coords)
+        .addTo(map)
+        .bindPopup("<b>" + city + "</b><br>坐标: " + coords[0].toFixed(4) + ", " + coords[1].toFixed(4));
+    });
+
+    // Define routes (仅基于"乘坐区间"数据)
+    var routes = [
+      // Rail routes (blue)
+      {path: ["宁波", "杭州东"], color: 'blue'},
+      {path: ["杭州东", "香港西九龙"], color: 'blue'},
+      {path: ["上海虹桥", "杭州东"], color: 'blue'},
+      {path: ["杭州东", "上海虹桥"], color: 'blue'},
+      {path: ["上海虹桥", "宁波"], color: 'blue'},
+      {path: ["北京南", "杭州东"], color: 'blue'},
+      {path: ["北京南", "杭州西"], color: 'blue'},
+      {path: ["北京南", "宁波"], color: 'blue'},
+      {path: ["宁波", "北京南"], color: 'blue'},
+      {path: ["北京南", "徐州东"], color: 'blue'},
+      {path: ["徐州东", "北京南"], color: 'blue'},
+      {path: ["北京南", "南京南"], color: 'blue'},
+      {path: ["南京南", "上海虹桥"], color: 'blue'},
+      {path: ["青岛北", "北京南"], color: 'blue'},
+      {path: ["北京南", "青岛"], color: 'blue'},
+      {path: ["大同南", "北京北"], color: 'blue'},
+      {path: ["北京北", "大同南"], color: 'blue'},
+      {path: ["杭州南", "广州"], color: 'blue'},
+      {path: ["宁波", "桐乡"], color: 'blue'},
+      {path: ["桐乡", "宁波"], color: 'blue'},
+      {path: ["上海", "拉萨"], color: 'blue'},
+      {path: ["日喀则", "拉萨"], color: 'blue'},
+      {path: ["天津", "北京南"], color: 'blue'},
+      {path: ["北京", "上海"], color: 'blue'},
+      {path: ["大连北", "北京"], color: 'blue'},
+      {path: ["吉林", "舒兰"], color: 'blue'},
+      {path: ["长春", "吉林"], color: 'blue'},
+      {path: ["乌兰浩特", "长春"], color: 'blue'},
+      {path: ["北京", "海拉尔"], color: 'blue'},
+      {path: ["苍南", "上海虹桥"], color: 'blue'},
+      {path: ["西双版纳", "琅勃拉邦"], color: 'blue'},
+      
+      // Air routes (red)
+      {path: ["龙洞堡T3", "萧山T4"], color: 'red'},
+      {path: ["萧山T4", "龙洞堡T3"], color: 'red'},
+      {path: ["樟宜T1", "萧山T4"], color: 'red'},
+      {path: ["萧山T3", "西双版纳嘎洒"], color: 'red'},
+      {path: ["萧山T3", "北京大兴"], color: 'red'},
+      {path: ["北京大兴", "宁波栎社"], color: 'red'},
+      {path: ["广州白云", "萧山T3"], color: 'red'},
+      {path: ["宁波栎社", "成都双流"], color: 'red'},
+      {path: ["北京首都", "宁波栎社"], color: 'red'},
+      {path: ["乌鲁木齐地窝堡", "北京首都"], color: 'red'},
+      {path: ["喀什徕宁", "乌鲁木齐地窝堡"], color: 'red'},
+      {path: ["北京首都", "喀什徕宁"], color: 'red'},
+      {path: ["拉萨贡嘎", "成都双流"], color: 'red'},
+      
+      // International routes (green)
+      {path: ["吉隆坡", "新加坡"], color: 'green'},
+      {path: ["怡保", "吉隆坡"], color: 'green'},
+      {path: ["北海", "怡保"], color: 'green'},
+      {path: ["巴东勿刹", "北海"], color: 'green'},
+      {path: ["曼谷", "巴东勿刹"], color: 'green'},
+      {path: ["清迈", "曼谷"], color: 'green'},
+      {path: ["清莱", "清迈"], color: 'green'},
+      {path: ["琅勃拉邦", "会晒"], color: 'green'},
+      {path: ["成都东", "沙坪坝"], color: 'green'},
+      {path: ["重庆西", "贵阳北"], color: 'green'},
+      {path: ["贵阳北", "昆明南"], color: 'green'},
+      {path: ["昆明南", "长沙南"], color: 'green'},
+      {path: ["长沙南", "金华"], color: 'green'},
+      {path: ["金华", "宁波"], color: 'green'}
+    ];
+
+ 
+    // Draw routes
+    routes.forEach(function(route) {
+      var from = cityCoords[route.path[0]];
+      var to = cityCoords[route.path[1]];
+      if (from && to) {
+        var polyline = L.polyline([from, to], { 
+          color: route.color,
+          weight: 3,
+          opacity: 0.7
+        }).addTo(map);
+        polyline.bindPopup(route.path[0] + " → " + route.path[1]);
+      } else {
+        console.warn("缺少坐标: ", route.path);
+      }
+    });
+
+    // Add legend
+    var legend = L.control({position: 'bottomright'});
+    legend.onAdd = function(map) {
+      var div = L.DomUtil.create('div', 'legend');
+      div.innerHTML = '<h4>交通路线图</h4>' +
+                     '<div style="background-color: blue; width: 20px; height: 20px; display: inline-block;"></div> 铁路<br>' +
+                     '<div style="background-color: red; width: 20px; height: 20px; display: inline-block;"></div> 航空<br>' +
+                     '<div style="background-color: green; width: 20px; height: 20px; display: inline-block;"></div> 国际/其他';
+      return div;
+    };
+    legend.addTo(map);
+
+    // Auto-fit map to show all markers
+    var markers = [];
+    Object.keys(cityCoords).forEach(function(city) {
+      markers.push(L.latLng(cityCoords[city]));
+    });
+    map.fitBounds(L.latLngBounds(markers), {padding: [50, 50]});
+  </script>
+</body>
+</html>

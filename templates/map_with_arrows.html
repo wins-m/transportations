@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Transportations</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Leaflet CSS 和 JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet.curve/leaflet.curve.js"></script>
+  <style>
+    body { margin: 0; }
+    #map { height: 100vh; width: 100vw; }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <script>
+    var map = L.map('map').setView([30.6, 114.3], 5); // 初始中心位置在中国中部
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 12,
+      attribution: '&copy; OpenStreetMap'
+    }).addTo(map);
+
+    // ======== 手动填写城市经纬度坐标 ========
+    var cityCoords = {
+      "宁波": [121.5503, 29.8746],
+      "杭州东": [120.2194, 30.2594],
+      "上海虹桥": [121.3270, 31.2000],
+      "香港西九龙": [114.1594, 22.3080],
+      "龙洞堡T3": [106.8000, 26.5333],
+      "萧山T4": [120.4345, 30.2295],
+      "樟宜T1": [103.9940, 1.3570],
+      "吉隆坡": [101.6869, 3.1390],
+      "新加坡": [103.8198, 1.3521],
+      "怡保": [101.0844, 4.5975],
+      "北海": [100.3881, 5.4172]
+    };
+
+    // ======== 在地图上绘制轨迹线 ========
+    var routes = [
+      ["宁波", "杭州东"],
+      ["杭州东", "香港西九龙"],
+      ["上海虹桥", "杭州东"],
+      ["杭州东", "上海虹桥"],
+      ["龙洞堡T3", "萧山T4"],
+      ["萧山T4", "龙洞堡T3"],
+      ["樟宜T1", "萧山T4"],
+      ["吉隆坡", "新加坡"],
+      ["怡保", "吉隆坡"],
+      ["北海", "怡保"]
+    ];
+    
+   routes.forEach(function(pair) {
+     var from = cityCoords[pair[0]];
+     var to = cityCoords[pair[1]];
+     if (from && to) {
+       var polyline = L.polyline([from.slice().reverse(), to.slice().reverse()], { color: 'gray' }).addTo(map);
+       polyline.bindPopup(pair[0] + " → " + pair[1]);
+     } else {
+       console.warn("缺少坐标: ", pair);
+     }
+   });
+
+  </script>
+</body>
+</html>
