@@ -1748,7 +1748,12 @@
         });
 
         // 自动缩放
-        map.fitBounds(Object.values(locCoords).pad(0.2));
+        var markers = [];
+        Object.keys(locCoords).forEach(function (city) {
+            markers.push(L.latLng(locCoords[city]));
+        });
+        map.fitBounds(L.latLngBounds(markers), { padding: [50, 50] });
+
     </script>
 </body>
 
