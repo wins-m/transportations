@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>交通轨迹地图（合并+动画）</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <!-- 引入路径动画插件 -->
+  <script src="https://unpkg.com/leaflet-polylinedecorator@1.6.0/dist/leaflet.polylineDecorator.js"></script>
+  <style>
+    body { margin: 0; }
+    #map { height: 100vh; width: 100vw; }
+    .legend {
+      padding: 10px;
+      background: white;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    }
+    .route-popup { max-height: 300px; overflow-y: auto; }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <script>
+    // 初始化地图
+    const map = L.map('map').setView([30, 110], 5);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 18,
+      attribution: '&copy; OpenStreetMap'
+    }).addTo(map);
+
+    // 城市坐标
+    const cityCoords = {
+      "宁波": [29.8669, 121.5404],
+      "杭州东": [30.2925, 120.2119],
+      "上海虹桥": [31.1945, 121.3188],
+      "龙洞堡T3": [26.5385, 106.8007],
+      "萧山T4": [30.2350, 120.4340],
+      "香港西九龙": [22.3047, 114.1614]
+    };
+
+    // 模拟数据（实际替换为你的travelSegments）
+    const travelSegments = [
+      { type: "Rail", date: "2025-04-02", from: "宁波", to: "杭州东", vehicle: "D3146", duration: "01:04:00" },
+      { type: "Rail", date: "2024-12-01", from: "宁波", to: "杭州东", vehicle: "G1234", duration: "01:02:00" },
+      { type: "Rail", date: "2025-02-21", from: "杭州东", to: "香港西九龙", vehicle: "G899", duration: "10:09:00" },
+      { type: "Airway", date: "2024-08-04", from: "龙洞堡T3", to: "萧山T4", vehicle: "CZ2190", duration: "02:04:00" }
+    ];
+
+    // 颜色映射
+    const typeColors = { Rail: 'blue', Airway: 'red', Other: 'green' };
+
+    // ========= 方案1+3核心逻辑 =========
+    // 1. 按行程区间分组
+    const routeGroups = {};
+    travelSegments.forEach(segment => {
+      const key = `${segment.from}-${segment.to}`;
+      if (!routeGroups[key]) routeGroups[key] = [];
+      routeGroups[key].push(segment);
+    });
+
+    // 2. 绘制合并路线并添加动画
+    Object.entries(routeGroups).forEach(([key, group]) => {
+      const from = cityCoords[group[0].from];
+      const to = cityCoords[group[0].to];
+      
+      // 主路线（粗细反映频次）
+      const polyline = L.polyline([from, to], {
+        color: typeColors[group[0].type],
+        weight: Math.min(3 + group.length, 8), // 频次越高越粗
+        opacity: 0.7
+      }).addTo(map);
+
+      // 3. 动态动画效果（需插件）
+      L.polylineDecorator([from, to], {
+        patterns: [
+          {
+            offset: '100%',
+            repeat: '10%',  // 箭头密度
+            symbol: L.Symbol.arrowHead({
+              pixelSize: 10,
+              polygon: false,
+              pathOptions: {
+                color: typeColors[group[0].type],
+                weight: 1
+              }
+            })
+          }
+        ]
+      }).addTo(map);
+
+      // 4. 合并弹窗内容
+      const popupContent = `
+        <div class="route-popup">
+          <b>${group[0].from} → ${group[0].to}</b>
+          <small>（共 ${group.length} 次行程）</small>
+          <hr>
+          ${group.map(trip => `
+            <div style="margin-bottom:10px;padding-bottom:5px;border-bottom:1px dashed #eee">
+              <div style="display:flex;justify-content:space-between">
+                <span style="color:${typeColors[trip.type]}">
+                  ${trip.type === 'Rail' ? '🚄' : '✈️'} ${trip.date}
+                </span>
+                <span>${trip.vehicle}</span>
+              </div>
+              <div>用时: ${trip.duration}</div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+      polyline.bindPopup(popupContent);
+    });
+
+    // 添加图例
+    const legend = L.control({position: 'bottomright'});
+    legend.onAdd = () => {
+      const div = L.DomUtil.create('div', 'legend');
+      div.innerHTML = `
+        <h4>图例</h4>
+        <div><span style="background:blue;width:15px;height:15px;display:inline-block;"></span> 铁路</div>
+        <div><span style="background:red;width:15px;height:15px;display:inline-block;"></span> 航空</div>
+        <div><small>线宽/箭头数量反映行程频次</small></div>
+      `;
+      return div;
+    };
+    legend.addTo(map);
+  </script>
+</body>
+</html>
