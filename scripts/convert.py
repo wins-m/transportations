@@ -33,7 +33,7 @@ def main():
         print(f"File {src} does not exist.")
         return
     # Load the Excel file
-    df = pd.read_excel(src, header=0, sheet_name='Sheet1', skipfooter=4)
+    df = pd.read_excel(src, header=0, sheet_name='Sheet1', skipfooter=4).iloc[::-1]
 
     # Preprocess spot oordinates
     spots = {}
@@ -71,15 +71,16 @@ def gen_travel_segments(df, tgt):
         kind = _decide_trans_kind(a['类型'])
         res.append({
             'type': TRANS[a['类型']],
-            'date': a['日期'].strftime('%Y-%m-%d') if a['日期'] is not None else None,
+            'date': a['日期'].strftime('%Y-%m-%d') if a['日期'] is not None else '-',
             'from': _mod2(_mod1(a['乘坐区间'].split('-')[0], kind, a['始发站'])),
             'to': _mod2(_mod1(a['乘坐区间'].split('-')[-1], kind, a['终到站'])),
             'vehicle': a['车次'],
-            'duration': cal_duration(a['时间'], False) if a['时间'] is not None else None,
-            'distance': str(a['里程']) + ' km' if a['里程'] is not None else None,
+            'time': a['时间'] if a['时间'] is not None else '-',
+            'duration': cal_duration(a['时间'], False) if a['时间'] is not None else '-',
+            'distance': str(a['里程']) + ' km' if a['里程'] is not None else '-',
             'seat': a['座位号'],
             'price': a['票价'],
-            'note': a['备注'],
+            'note': a['备注'] if a['备注'] is not None else '',
         })
     json_dump(data=res, tgt=tgt)
 

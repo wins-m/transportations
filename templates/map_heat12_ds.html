@@ -1,0 +1,1590 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>交通轨迹热力图</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <style>
+        body {
+            margin: 0;
+        }
+
+        #map {
+            height: 100vh;
+            width: 100vw;
+        }
+
+        .legend {
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .route-count {
+            font-weight: bold;
+            color: #ff0000;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="map"></div>
+    <script>
+        // 初始化地图
+        const map = L.map('map').setView([30, 110], 5);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 18,
+            attribution: '&copy; OpenStreetMap'
+        }).addTo(map);
+
+        // 城市坐标数据
+        const cityCoords = {
+            "宁波站": [
+                29.8629414928399,
+                121.53739804767
+            ],
+            "杭州东站": [
+                30.2925,
+                120.2119
+            ],
+            "深圳宝安T3": [
+                22.627554,
+                113.81184
+            ],
+            "杭州萧山T4": [
+                30.234134,
+                120.430634
+            ],
+            "香港西九龙站": [
+                22.3047,
+                114.1614
+            ],
+            "上海虹桥站": [
+                31.1945,
+                121.3188
+            ],
+            "贵阳龙洞堡T3": [
+                26.5385,
+                106.8007
+            ],
+            "新加坡樟宜T1": [
+                1.3594,
+                103.9895
+            ],
+            "Melaka Sentral": [
+                2.220788,
+                102.249576
+            ],
+            "新加坡": [
+                1.3521,
+                103.8198
+            ],
+            "KL Sentral": [
+                3.134553,
+                101.686163
+            ],
+            "Ipoh Station": [
+                4.59748,
+                101.073073
+            ],
+            "KL Sentral Station": [
+                3.134553,
+                101.686163
+            ],
+            "Butterworth Station": [
+                5.393295,
+                100.366588
+            ],
+            "Padang Besar (Thailand) Station": [
+                6.668834,
+                100.324502
+            ],
+            "Krung Thep Aphiwat Station": [
+                13.803965,
+                100.54192
+            ],
+            "Chiang Mai Station": [
+                18.783987982107366,
+                99.01697066090912
+            ],
+            "Chiang Rai BT1": [
+                19.904645345183543,
+                99.83419860546132
+            ],
+            "Chiang Mai BT3": [
+                18.799906188457545,
+                99.01778681437301
+            ],
+            "Chiang Khong Custom": [
+                20.21539986406964,
+                100.43528298856795
+            ],
+            "Luang Prabang Slow Boat Terminal": [
+                19.924889693412215,
+                102.18046162648591
+            ],
+            "Houayxay Slow Boat Pier": [
+                20.285056907520673,
+                100.40726694337108
+            ],
+            "西双版纳站": [
+                21.9737,
+                100.7656
+            ],
+            "Luang Prabang Station": [
+                19.867496,
+                102.21401
+            ],
+            "杭州萧山T3": [
+                30.238782,
+                120.435702
+            ],
+            "嘎洒": [
+                21.972406,
+                100.764783
+            ],
+            "北京南站": [
+                39.865,
+                116.3785
+            ],
+            "杭州西站": [
+                30.2966,
+                119.9989
+            ],
+            "大兴": [
+                39.510561,
+                116.429172
+            ],
+            "广州白云T1": [
+                23.386628,
+                113.30307
+            ],
+            "杭州南站": [
+                30.172196379350876,
+                120.29337945538573
+            ],
+            "广州站": [
+                23.1482,
+                113.2644
+            ],
+            "徐州东站": [
+                34.2694,
+                117.2064
+            ],
+            "北京站": [
+                39.9024,
+                116.4274
+            ],
+            "上海站": [
+                31.249574,
+                121.455708
+            ],
+            "南京南站": [
+                31.9744,
+                118.804
+            ],
+            "大同南站": [
+                40.0394,
+                113.3
+            ],
+            "北京北站": [
+                39.9425,
+                116.3536
+            ],
+            "青岛北站": [
+                36.1694,
+                120.3824
+            ],
+            "青岛站": [
+                36.0671,
+                120.3826
+            ],
+            "栎社": [
+                29.821287,
+                121.466363
+            ],
+            "金华站": [
+                29.079,
+                119.6474
+            ],
+            "长沙南站": [
+                28.1469,
+                113.0645
+            ],
+            "昆明南站": [
+                24.88,
+                102.833
+            ],
+            "贵阳北站": [
+                26.6512,
+                106.6306
+            ],
+            "重庆西站": [
+                29.5029,
+                106.4335
+            ],
+            "成都东站": [
+                30.628779,
+                104.140947
+            ],
+            "沙坪坝站": [
+                29.541,
+                106.456
+            ],
+            "宁波栎社T2": [
+                29.820289,
+                121.46108
+            ],
+            "成都双流T1": [
+                30.579524,
+                103.956727
+            ],
+            "上海浦东T2": [
+                31.151069,
+                121.809431
+            ],
+            "北京首都T3": [
+                40.065329,
+                116.613638
+            ],
+            "乌鲁木齐地窝堡T2": [
+                43.902179,
+                87.472381
+            ],
+            "北京首都T2": [
+                40.079904,
+                116.594548
+            ],
+            "喀什徕宁": [
+                39.541179,
+                76.024433
+            ],
+            "成都双流T2": [
+                30.569798,
+                103.955194
+            ],
+            "拉萨贡嘎T2": [
+                29.29048,
+                90.899976
+            ],
+            "日喀则站": [
+                29.2675,
+                88.8823
+            ],
+            "拉萨站": [
+                29.6259,
+                91.1384
+            ],
+            "桐乡站": [
+                30.63,
+                120.54
+            ],
+            "天津站": [
+                39.1367,
+                117.2056
+            ],
+            "杭州萧山T1": [
+                30.234134,
+                120.430634
+            ],
+            "上海南站": [
+                31.1547,
+                121.4298
+            ],
+            "大连北站": [
+                39.0151,
+                121.5389
+            ],
+            "舒兰": [
+                44.405922,
+                126.965515
+            ],
+            "大连": [
+                38.913962,
+                121.614786
+            ],
+            "吉林站": [
+                43.8379,
+                126.5496
+            ],
+            "舒兰站": [
+                44.4071,
+                126.9476
+            ],
+            "长春站": [
+                43.9054,
+                125.3255
+            ],
+            "白城站": [
+                45.6196,
+                122.8387
+            ],
+            "呼伦贝尔": [
+                49.166536,
+                119.77845
+            ],
+            "白城": [
+                45.620131,
+                122.838102
+            ],
+            "海拉尔站": [
+                49.2116,
+                119.7666
+            ]
+        };
+
+        // 模拟行程数据（含重复路线）
+        const travelSegments = [
+            {
+                "type": "Railway",
+                "date": "2025-04-02",
+                "from": "宁波站",
+                "to": "杭州东站",
+                "vehicle": "D3146",
+                "duration": "01:04:00",
+                "distance": "1438 km",
+                "seat": "07车05A",
+                "price": 57,
+                "note": "积分兑换"
+            },
+            {
+                "type": "Airline",
+                "date": "2025-02-23",
+                "from": "深圳宝安T3",
+                "to": "杭州萧山T4",
+                "vehicle": "CA1734",
+                "duration": "01:36:00",
+                "distance": "1179 km",
+                "seat": "21A",
+                "price": 490,
+                "note": "香港行返程"
+            },
+            {
+                "type": "Railway",
+                "date": "2025-02-21",
+                "from": "杭州东站",
+                "to": "香港西九龙站",
+                "vehicle": "G899",
+                "duration": "10:09:00",
+                "distance": "1662 km",
+                "seat": "09车032号上铺",
+                "price": 770,
+                "note": "香港行去程"
+            },
+            {
+                "type": "Railway",
+                "date": "2024-12-01",
+                "from": "上海虹桥站",
+                "to": "杭州东站",
+                "vehicle": "D3101",
+                "duration": "01:10:00",
+                "distance": "891 km",
+                "seat": "07车11C",
+                "price": 59,
+                "note": "积分兑换+积分改签"
+            },
+            {
+                "type": "Railway",
+                "date": "2024-11-29",
+                "from": "杭州东站",
+                "to": "上海虹桥站",
+                "vehicle": "G9508",
+                "duration": "00:56:00",
+                "distance": "159 km",
+                "seat": "08车08F",
+                "price": 80,
+                "note": "办通行证"
+            },
+            {
+                "type": "Railway",
+                "date": "2024-11-10",
+                "from": "上海虹桥站",
+                "to": "杭州东站",
+                "vehicle": "D3101",
+                "duration": "01:10:00",
+                "distance": "891 km",
+                "seat": "05车10C",
+                "price": 59,
+                "note": NaN
+            },
+            {
+                "type": "Railway",
+                "date": "2024-11-09",
+                "from": "上海虹桥站",
+                "to": "杭州东站",
+                "vehicle": "D2125",
+                "duration": "00:56:00",
+                "distance": "1084 km",
+                "seat": "10车17F",
+                "price": 9,
+                "note": "改签费"
+            },
+            {
+                "type": "Railway",
+                "date": "2024-11-09",
+                "from": "杭州东站",
+                "to": "上海虹桥站",
+                "vehicle": "G7580",
+                "duration": "01:00:00",
+                "distance": "780 km",
+                "seat": "02车10D",
+                "price": 73,
+                "note": "落户2，积分兑换"
+            },
+            {
+                "type": "Railway",
+                "date": "2024-10-26",
+                "from": "上海虹桥站",
+                "to": "杭州东站",
+                "vehicle": "D2125",
+                "duration": "00:56:00",
+                "distance": "1084 km",
+                "seat": "05车05C",
+                "price": 59,
+                "note": NaN
+            },
+            {
+                "type": "Railway",
+                "date": "2024-10-25",
+                "from": "杭州东站",
+                "to": "上海虹桥站",
+                "vehicle": "G9508",
+                "duration": "00:56:00",
+                "distance": "159 km",
+                "seat": "13车12D",
+                "price": 80,
+                "note": "落户1"
+            },
+            {
+                "type": "Airline",
+                "date": "2024-08-04",
+                "from": "贵阳龙洞堡T3",
+                "to": "杭州萧山T4",
+                "vehicle": "CZ2190",
+                "duration": "02:04:00",
+                "distance": "1538 km",
+                "seat": "38K",
+                "price": 1330,
+                "note": NaN
+            },
+            {
+                "type": "Airline",
+                "date": "2024-08-01",
+                "from": "杭州萧山T4",
+                "to": "贵阳龙洞堡T3",
+                "vehicle": "CA1749",
+                "duration": "02:02:00",
+                "distance": "1538 km",
+                "seat": "23A",
+                "price": 1510,
+                "note": NaN
+            },
+            {
+                "type": "Airline",
+                "date": "2024-07-08",
+                "from": "新加坡樟宜T1",
+                "to": "杭州萧山T4",
+                "vehicle": "TR188",
+                "duration": "04:54:00",
+                "distance": "3649 km",
+                "seat": "28J",
+                "price": 1043,
+                "note": NaN
+            },
+            {
+                "type": "Other",
+                "date": "2024-07-06",
+                "from": "Melaka Sentral",
+                "to": "新加坡",
+                "vehicle": "VV85",
+                "duration": "04:30:00",
+                "distance": "nan km",
+                "seat": NaN,
+                "price": NaN,
+                "note": NaN
+            },
+            {
+                "type": "Other",
+                "date": "2024-07-03",
+                "from": "KL Sentral",
+                "to": "Melaka Sentral",
+                "vehicle": "4723175",
+                "duration": "02:00:00",
+                "distance": "nan km",
+                "seat": "03",
+                "price": "RM 14.4",
+                "note": NaN
+            },
+            {
+                "type": "Railway",
+                "date": "2024-07-01",
+                "from": "Ipoh Station",
+                "to": "KL Sentral Station",
+                "vehicle": "EP9277",
+                "duration": "02:34:00",
+                "distance": "nan km",
+                "seat": NaN,
+                "price": NaN,
+                "note": NaN
+            },
+            {
+                "type": "Railway",
+                "date": "2024-07-01",
+                "from": "Butterworth Station",
+                "to": "Ipoh Station",
+                "vehicle": "2907",
+                "duration": "01:56:00",
+                "distance": "nan km",
+                "seat": NaN,
+                "price": NaN,
+                "note": NaN
+            },
+            {
+                "type": "Railway",
+                "date": "2024-06-28",
+                "from": "Padang Besar (Thailand) Station",
+                "to": "Butterworth Station",
+                "vehicle": "-",
+                "duration": "03:00:00",
+                "distance": "nan km",
+                "seat": NaN,
+                "price": "RM 11.4",
+                "note": NaN
+            },
+            {
+                "type": "Railway",
+                "date": "2024-06-27",
+                "from": "Krung Thep Aphiwat Station",
+                "to": "Padang Besar (Thailand) Station",
+                "vehicle": "Train No. 45",
+                "duration": "15:49:00",
+                "distance": "nan km",
+                "seat": NaN,
+                "price": NaN,
+                "note": NaN
+            },
+            {
+                "type": "Railway",
+                "date": "2024-06-23",
+                "from": "Chiang Mai Station",
+                "to": "Krung Thep Aphiwat Station",
+                "vehicle": "Train No. 10",
+                "duration": "12:50:00",
+                "distance": "nan km",
+                "seat": "6车29号上",
+                "price": 188,
+                "note": NaN
+            },
+            {
+                "type": "Other",
+                "date": "2024-06-20",
+                "from": "Chiang Rai BT1",
+                "to": "Chiang Mai BT3",
+                "vehicle": "209",
+                "duration": "03:20:00",
+                "distance": "182 km",
+                "seat": "4B",
+                "price": 61,
+                "note": NaN
+            },
+            {
+                "type": "Other",
+                "date": "2024-06-19",
+                "from": "Chiang Khong Custom",
+                "to": "Chiang Rai BT1",
+                "vehicle": "-",
+                "duration": "02:00:00",
+                "distance": "103 km",
+                "seat": NaN,
+                "price": NaN,
+                "note": "和一群白人包车"
+            },
+            {
+                "type": "Other",
+                "date": "2024-06-18",
+                "from": "Luang Prabang Slow Boat Terminal",
+                "to": "Houayxay Slow Boat Pier",
+                "vehicle": "0112",
+                "duration": "33:30:00",
+                "distance": "- km",
+                "seat": "-",
+                "price": 122,
+                "note": "经停 Pak Bang 过夜"
+            },
+            {
+                "type": "Railway",
+                "date": "2024-06-15",
+                "from": "西双版纳站",
+                "to": "Luang Prabang Station",
+                "vehicle": "D85",
+                "duration": "05:02:00",
+                "distance": "316 km",
+                "seat": "07车07F",
+                "price": 174,
+                "note": NaN
+            },
+            {
+                "type": "Airline",
+                "date": "2024-06-10",
+                "from": "杭州萧山T3",
+                "to": "嘎洒",
+                "vehicle": "GJ8823",
+                "duration": "04:35:00",
+                "distance": "2310 km",
+                "seat": "8A",
+                "price": 400,
+                "note": "经停毕节飞雄"
+            },
+            {
+                "type": "Railway",
+                "date": "2024-05-27",
+                "from": "北京南站",
+                "to": "杭州东站",
+                "vehicle": "G187",
+                "duration": "06:04:00",
+                "distance": "1586 km",
+                "seat": "13车04F",
+                "price": 623,
+                "note": "答辩返程"
+            },
+            {
+                "type": "Railway",
+                "date": "2024-05-26",
+                "from": "北京南站",
+                "to": "杭州西站",
+                "vehicle": "G37",
+                "duration": "04:48:00",
+                "distance": "1416 km",
+                "seat": "07车10A",
+                "price": 10,
+                "note": "退票费"
+            },
+            {
+                "type": "Railway",
+                "date": "2024-05-26",
+                "from": "北京南站",
+                "to": "杭州西站",
+                "vehicle": "G37",
+                "duration": "04:48:00",
+                "distance": "1416 km",
+                "seat": "07车10A",
+                "price": 93.5,
+                "note": "改签费"
+            },
+            {
+                "type": "Airline",
+                "date": "2024-05-22",
+                "from": "杭州萧山T3",
+                "to": "大兴",
+                "vehicle": "KN2332",
+                "duration": "01:51:00",
+                "distance": "1200 km",
+                "seat": "34A",
+                "price": 460,
+                "note": "24春答辩"
+            },
+            {
+                "type": "Railway",
+                "date": "2024-02-19",
+                "from": "北京南站",
+                "to": "杭州东站",
+                "vehicle": "G39",
+                "duration": "04:18:00",
+                "distance": "1279 km",
+                "seat": "13车03C",
+                "price": 506,
+                "note": "24春实习"
+            },
+            {
+                "type": "Railway",
+                "date": "2024-02-18",
+                "from": "杭州东站",
+                "to": "北京南站",
+                "vehicle": "G192",
+                "duration": "05:45:00",
+                "distance": "1279 km",
+                "seat": "07车05A",
+                "price": 506,
+                "note": "24春注册"
+            },
+            {
+                "type": "Airline",
+                "date": "2023-12-11",
+                "from": "广州白云T1",
+                "to": "杭州萧山T3",
+                "vehicle": "HU7161",
+                "duration": "01:42:00",
+                "distance": "1099 km",
+                "seat": "43A",
+                "price": 536,
+                "note": "广马返程"
+            },
+            {
+                "type": "Railway",
+                "date": "2023-12-08",
+                "from": "杭州南站",
+                "to": "广州站",
+                "vehicle": "T169",
+                "duration": "-9:16:00",
+                "distance": "1598 km",
+                "seat": "06车005号上铺",
+                "price": 296.5,
+                "note": "广州马拉松"
+            },
+            {
+                "type": "Railway",
+                "date": "2023-11-22",
+                "from": "北京南站",
+                "to": "杭州东站",
+                "vehicle": "G185",
+                "duration": "05:56:00",
+                "distance": "1506 km",
+                "seat": "04车05F",
+                "price": 506,
+                "note": "23秋实习"
+            },
+            {
+                "type": "Railway",
+                "date": "2023-11-06",
+                "from": "徐州东站",
+                "to": "北京南站",
+                "vehicle": "G110",
+                "duration": "03:01:00",
+                "distance": "1318 km",
+                "seat": "11车14D",
+                "price": 322,
+                "note": "徐马返程，G14改签"
+            },
+            {
+                "type": "Railway",
+                "date": "2023-11-04",
+                "from": "北京南站",
+                "to": "徐州东站",
+                "vehicle": "G37",
+                "duration": "02:21:00",
+                "distance": "1416 km",
+                "seat": "04车15A",
+                "price": 350,
+                "note": "徐州马拉松"
+            },
+            {
+                "type": "Railway",
+                "date": "2023-10-08",
+                "from": "宁波站",
+                "to": "北京南站",
+                "vehicle": "G182",
+                "duration": "06:38:00",
+                "distance": "1434 km",
+                "seat": "14车18A",
+                "price": 559,
+                "note": "23国庆返校"
+            },
+            {
+                "type": "Railway",
+                "date": "2023-09-30",
+                "from": "北京站",
+                "to": "上海站",
+                "vehicle": "1461",
+                "duration": "18:49:00",
+                "distance": "1463 km",
+                "seat": "07车08下",
+                "price": 226.5,
+                "note": "23国庆返乡"
+            },
+            {
+                "type": "Railway",
+                "date": "2023-09-10",
+                "from": "上海站",
+                "to": "北京站",
+                "vehicle": "T110",
+                "duration": "16:02:00",
+                "distance": "1463 km",
+                "seat": "05车14上",
+                "price": 476.5,
+                "note": "23秋返校，改签10车12上，换"
+            },
+            {
+                "type": "Railway",
+                "date": "2023-08-14",
+                "from": "南京南站",
+                "to": "上海虹桥站",
+                "vehicle": "G117",
+                "duration": "01:09:00",
+                "distance": "1318 km",
+                "seat": "11车13D",
+                "price": 153,
+                "note": "23夏实习，积分兑换"
+            },
+            {
+                "type": "Railway",
+                "date": "2023-08-14",
+                "from": "北京南站",
+                "to": "南京南站",
+                "vehicle": "G117",
+                "duration": "04:24:00",
+                "distance": "1318 km",
+                "seat": "12车07A",
+                "price": 400,
+                "note": "23夏实习"
+            },
+            {
+                "type": "Railway",
+                "date": "2023-08-05",
+                "from": "宁波站",
+                "to": "北京南站",
+                "vehicle": "G36",
+                "duration": "05:23:00",
+                "distance": "1434 km",
+                "seat": "06车07A",
+                "price": 559,
+                "note": "23夏实习"
+            },
+            {
+                "type": "Railway",
+                "date": "2023-07-23",
+                "from": "上海虹桥站",
+                "to": "宁波站",
+                "vehicle": "D3141",
+                "duration": "02:07:00",
+                "distance": "1549 km",
+                "seat": "07车16C",
+                "price": 116,
+                "note": "23夏返乡"
+            },
+            {
+                "type": "Railway",
+                "date": "2023-06-11",
+                "from": "北京南站",
+                "to": "上海虹桥站",
+                "vehicle": "G11",
+                "duration": "04:38:00",
+                "distance": "1318 km",
+                "seat": "10车06F",
+                "price": 662,
+                "note": "23夏实习"
+            },
+            {
+                "type": "Railway",
+                "date": "2023-04-29",
+                "from": "大同南站",
+                "to": "北京北站",
+                "vehicle": "G2540",
+                "duration": "01:45:00",
+                "distance": "338 km",
+                "seat": "11车05F",
+                "price": 156,
+                "note": "大同行返程"
+            },
+            {
+                "type": "Railway",
+                "date": "2023-04-28",
+                "from": "北京北站",
+                "to": "大同南站",
+                "vehicle": "G2533",
+                "duration": "02:13:00",
+                "distance": "338 km",
+                "seat": "04车02D",
+                "price": 170,
+                "note": "大同行"
+            },
+            {
+                "type": "Railway",
+                "date": "2023-03-19",
+                "from": "青岛北站",
+                "to": "北京南站",
+                "vehicle": "G212",
+                "duration": "03:23:00",
+                "distance": "804 km",
+                "seat": "14车04F",
+                "price": 336,
+                "note": "青岛半马返程"
+            },
+            {
+                "type": "Railway",
+                "date": "2023-03-18",
+                "from": "北京南站",
+                "to": "青岛站",
+                "vehicle": "G205",
+                "duration": "03:49:00",
+                "distance": "819 km",
+                "seat": "03车07F",
+                "price": 349,
+                "note": "青岛半马"
+            },
+            {
+                "type": "Railway",
+                "date": "2023-02-07",
+                "from": "宁波站",
+                "to": "北京南站",
+                "vehicle": "G36",
+                "duration": "05:23:00",
+                "distance": "1434 km",
+                "seat": "07车16A",
+                "price": 541,
+                "note": "23春返校"
+            },
+            {
+                "type": "Airline",
+                "date": "2023-01-18",
+                "from": "大兴",
+                "to": "栎社",
+                "vehicle": "MU6488",
+                "duration": "02:09:00",
+                "distance": "1338 km",
+                "seat": "47A",
+                "price": 362,
+                "note": "22冬返乡"
+            },
+            {
+                "type": "Railway",
+                "date": "2022-08-23",
+                "from": "宁波站",
+                "to": "北京南站",
+                "vehicle": "G182",
+                "duration": "06:38:00",
+                "distance": "1434 km",
+                "seat": "06车12A",
+                "price": 541,
+                "note": "22秋入学"
+            },
+            {
+                "type": "Railway",
+                "date": "2022-07-29",
+                "from": "金华站",
+                "to": "宁波站",
+                "vehicle": "G2334",
+                "duration": "02:25:00",
+                "distance": "1857 km",
+                "seat": "02车01C",
+                "price": 130.5,
+                "note": "宁波暂驻"
+            },
+            {
+                "type": "Railway",
+                "date": "2022-07-28",
+                "from": "长沙南站",
+                "to": "金华站",
+                "vehicle": "G1350",
+                "duration": "03:25:00",
+                "distance": "1083 km",
+                "seat": "07车09A",
+                "price": 338,
+                "note": "金华聚会"
+            },
+            {
+                "type": "Railway",
+                "date": "2022-07-27",
+                "from": "昆明南站",
+                "to": "长沙南站",
+                "vehicle": "G1696",
+                "duration": "06:15:00",
+                "distance": "2092 km",
+                "seat": "10车12A",
+                "price": 498.5,
+                "note": "长沙行"
+            },
+            {
+                "type": "Railway",
+                "date": "2022-07-25",
+                "from": "贵阳北站",
+                "to": "昆明南站",
+                "vehicle": "G2803",
+                "duration": "02:04:00",
+                "distance": "nan km",
+                "seat": "04车13F",
+                "price": 212.5,
+                "note": "昆明行"
+            },
+            {
+                "type": "Railway",
+                "date": "2022-07-23",
+                "from": "重庆西站",
+                "to": "贵阳北站",
+                "vehicle": "C6033",
+                "duration": "02:13:00",
+                "distance": "nan km",
+                "seat": "10车02F",
+                "price": 139,
+                "note": "贵阳行"
+            },
+            {
+                "type": "Railway",
+                "date": "2022-07-21",
+                "from": "成都东站",
+                "to": "沙坪坝站",
+                "vehicle": "G8615",
+                "duration": "01:18:00",
+                "distance": "299 km",
+                "seat": "06车02A",
+                "price": 164,
+                "note": "重庆行"
+            },
+            {
+                "type": "Airline",
+                "date": "2022-07-09",
+                "from": "宁波栎社T2",
+                "to": "成都双流T1",
+                "vehicle": "3U8938",
+                "duration": "02:26:00",
+                "distance": "1803 km",
+                "seat": "41A",
+                "price": 920,
+                "note": "川西行"
+            },
+            {
+                "type": "Railway",
+                "date": "2022-07-02",
+                "from": "北京南站",
+                "to": "宁波站",
+                "vehicle": "G35",
+                "duration": "05:18:00",
+                "distance": "1434 km",
+                "seat": "12车01F",
+                "price": 541,
+                "note": "22夏返乡"
+            },
+            {
+                "type": "Airline",
+                "date": "2022-02-06",
+                "from": "上海浦东T2",
+                "to": "大兴",
+                "vehicle": "CZ8882",
+                "duration": "01:51:00",
+                "distance": "1178 km",
+                "seat": "50A",
+                "price": 380,
+                "note": "22春返校"
+            },
+            {
+                "type": "Airline",
+                "date": "2022-01-29",
+                "from": "北京首都T3",
+                "to": "宁波栎社T2",
+                "vehicle": "CA1839",
+                "duration": "01:58:00",
+                "distance": "1338 km",
+                "seat": "16L",
+                "price": 470,
+                "note": "22冬返乡"
+            },
+            {
+                "type": "Airline",
+                "date": "2021-07-12",
+                "from": "乌鲁木齐地窝堡T2",
+                "to": "北京首都T2",
+                "vehicle": "HU7146",
+                "duration": "03:14:00",
+                "distance": "2842 km",
+                "seat": "57A",
+                "price": 860,
+                "note": "喀什行，返程"
+            },
+            {
+                "type": "Airline",
+                "date": "2021-07-10",
+                "from": "喀什徕宁",
+                "to": "乌鲁木齐地窝堡T2",
+                "vehicle": "CA1478",
+                "duration": "01:47:00",
+                "distance": "1311 km",
+                "seat": "15A",
+                "price": 420,
+                "note": "乌鲁木齐暂驻"
+            },
+            {
+                "type": "Airline",
+                "date": "2021-07-05",
+                "from": "北京首都T3",
+                "to": "喀什徕宁",
+                "vehicle": "CA1477",
+                "duration": "06:49:00",
+                "distance": "3752 km",
+                "seat": "30L",
+                "price": 1740,
+                "note": "喀什行"
+            },
+            {
+                "type": "Railway",
+                "date": "2021-06-29",
+                "from": "宁波站",
+                "to": "北京南站",
+                "vehicle": "G182",
+                "duration": "06:38:00",
+                "distance": "1434 km",
+                "seat": "11车18F",
+                "price": 541,
+                "note": "21夏返校"
+            },
+            {
+                "type": "Railway",
+                "date": "2021-06-17",
+                "from": "北京南站",
+                "to": "上海虹桥站",
+                "vehicle": "G145",
+                "duration": "05:58:00",
+                "distance": "1318 km",
+                "seat": "15车09F",
+                "price": 526,
+                "note": "高金面试"
+            },
+            {
+                "type": "Railway",
+                "date": "2021-03-06",
+                "from": "宁波站",
+                "to": "北京南站",
+                "vehicle": NaN,
+                "duration": "",
+                "distance": "1434 km",
+                "seat": NaN,
+                "price": NaN,
+                "note": "21春返校，车票报销"
+            },
+            {
+                "type": "Airline",
+                "date": "2021-02-04",
+                "from": "北京首都T2",
+                "to": "宁波栎社T2",
+                "vehicle": "MU5178",
+                "duration": "02:02:00",
+                "distance": "1338 km",
+                "seat": "48L",
+                "price": 370,
+                "note": "21春返乡"
+            },
+            {
+                "type": "Railway",
+                "date": "2020-09-13",
+                "from": "宁波站",
+                "to": "北京南站",
+                "vehicle": "G274",
+                "duration": "06:42:00",
+                "distance": "1434 km",
+                "seat": "12车01F",
+                "price": 446.5,
+                "note": "20秋返校"
+            },
+            {
+                "type": "Airline",
+                "date": "2020-09-06",
+                "from": "成都双流T2",
+                "to": "宁波栎社T2",
+                "vehicle": "9C6163",
+                "duration": "02:55:00",
+                "distance": "nan km",
+                "seat": NaN,
+                "price": 560,
+                "note": "川藏行返程"
+            },
+            {
+                "type": "Airline",
+                "date": "2020-09-03",
+                "from": "拉萨贡嘎T2",
+                "to": "成都双流T2",
+                "vehicle": "EU2744",
+                "duration": "01:56:00",
+                "distance": "1334 km",
+                "seat": "8F",
+                "price": 1020,
+                "note": "成都行"
+            },
+            {
+                "type": "Railway",
+                "date": "2020-09-01",
+                "from": "日喀则站",
+                "to": "拉萨站",
+                "vehicle": "Z8804",
+                "duration": "02:53:00",
+                "distance": "248 km",
+                "seat": "加1车056",
+                "price": 40.5,
+                "note": "珠峰返，车饰，藏民"
+            },
+            {
+                "type": "Railway",
+                "date": "2020-08-23",
+                "from": "上海站",
+                "to": "拉萨站",
+                "vehicle": "Z164",
+                "duration": "47:27:00",
+                "distance": "4373 km",
+                "seat": "03车011上铺",
+                "price": 793.5,
+                "note": "进藏"
+            },
+            {
+                "type": "Railway",
+                "date": "2020-08-23",
+                "from": "宁波站",
+                "to": "上海虹桥站",
+                "vehicle": "G7516",
+                "duration": "01:54:00",
+                "distance": "490 km",
+                "seat": "10车10C",
+                "price": 144,
+                "note": "上海中转"
+            },
+            {
+                "type": "Railway",
+                "date": "2020-07-26",
+                "from": "桐乡站",
+                "to": "宁波站",
+                "vehicle": "G7583",
+                "duration": "01:14:00",
+                "distance": "479 km",
+                "seat": "08车08D",
+                "price": 92.5,
+                "note": "乌镇行返程"
+            },
+            {
+                "type": "Railway",
+                "date": "2020-07-25",
+                "from": "宁波站",
+                "to": "桐乡站",
+                "vehicle": "G7508",
+                "duration": "01:20:00",
+                "distance": "466 km",
+                "seat": "07车07C",
+                "price": 92.5,
+                "note": "乌镇行"
+            },
+            {
+                "type": "Railway",
+                "date": "2020-01-15",
+                "from": "北京南站",
+                "to": "宁波站",
+                "vehicle": "G167",
+                "duration": "06:55:00",
+                "distance": "1709 km",
+                "seat": "06车13F",
+                "price": 446.5,
+                "note": "19冬返乡；青岛-徐州-杭州"
+            },
+            {
+                "type": "Railway",
+                "date": "2019-10-06",
+                "from": "天津站",
+                "to": "北京南站",
+                "vehicle": "C2036",
+                "duration": "00:30:00",
+                "distance": "120 km",
+                "seat": "05车13A",
+                "price": 54.5,
+                "note": "19京津返程"
+            },
+            {
+                "type": "Airline",
+                "date": "2019-10-03",
+                "from": "杭州萧山T1",
+                "to": "北京首都T3",
+                "vehicle": "CA1596",
+                "duration": "01:49:00",
+                "distance": "1200 km",
+                "seat": "31A",
+                "price": 410,
+                "note": "返校"
+            },
+            {
+                "type": "Railway",
+                "date": "2019-10-01",
+                "from": "上海南站",
+                "to": "杭州东站",
+                "vehicle": "K79",
+                "duration": "02:20:00",
+                "distance": "2510 km",
+                "seat": "14车050",
+                "price": 24.5,
+                "note": "杭州行"
+            },
+            {
+                "type": "Railway",
+                "date": "2019-09-27",
+                "from": "北京站",
+                "to": "上海站",
+                "vehicle": "D701",
+                "duration": "12:04:00",
+                "distance": "1463 km",
+                "seat": "04车010上铺",
+                "price": 440,
+                "note": "上海行"
+            },
+            {
+                "type": "Railway",
+                "date": "2019-08-13",
+                "from": "大连北站",
+                "to": "北京站",
+                "vehicle": "D43",
+                "duration": "06:36:00",
+                "distance": "774 km",
+                "seat": "11车01B",
+                "price": 261,
+                "note": "2019实践团返程"
+            },
+            {
+                "type": "Other",
+                "date": "2019-07-29",
+                "from": "舒兰",
+                "to": "大连",
+                "vehicle": "-",
+                "duration": "",
+                "distance": "nan km",
+                "seat": "-",
+                "price": "-",
+                "note": "2019实践团"
+            },
+            {
+                "type": "Railway",
+                "date": "2019-07-22",
+                "from": "吉林站",
+                "to": "舒兰站",
+                "vehicle": 4341,
+                "duration": "02:08:00",
+                "distance": "131 km",
+                "seat": "03车016",
+                "price": 6,
+                "note": "赴舒兰"
+            },
+            {
+                "type": "Railway",
+                "date": "2019-07-22",
+                "from": "长春站",
+                "to": "吉林站",
+                "vehicle": "C1245",
+                "duration": "00:40:00",
+                "distance": "111 km",
+                "seat": "04车13B",
+                "price": 31.5,
+                "note": "吉林中转"
+            },
+            {
+                "type": "Railway",
+                "date": "2019-07-21",
+                "from": "白城站",
+                "to": "长春站",
+                "vehicle": "C1302",
+                "duration": "02:38:00",
+                "distance": "420 km",
+                "seat": "15车14B",
+                "price": 98,
+                "note": "长春中转"
+            },
+            {
+                "type": "Other",
+                "date": "2019-07-15",
+                "from": "呼伦贝尔",
+                "to": "白城",
+                "vehicle": "-",
+                "duration": "",
+                "distance": "nan km",
+                "seat": "-",
+                "price": "-",
+                "note": "2019实践团"
+            },
+            {
+                "type": "Railway",
+                "date": "2019-07-12",
+                "from": "北京站",
+                "to": "海拉尔站",
+                "vehicle": "K1303",
+                "duration": "30:28:00",
+                "distance": "2086 km",
+                "seat": "05车022中铺",
+                "price": 421,
+                "note": "2019实践团去程"
+            },
+            {
+                "type": "Railway",
+                "date": "2019-06-30",
+                "from": "杭州东站",
+                "to": "北京南站",
+                "vehicle": "G32",
+                "duration": "04:39:00",
+                "distance": "1279 km",
+                "seat": "04车13F",
+                "price": 404,
+                "note": "19夏返校"
+            },
+            {
+                "type": "Railway",
+                "date": "2019-06-30",
+                "from": "宁波站",
+                "to": "杭州东站",
+                "vehicle": "G7540",
+                "duration": "00:53:00",
+                "distance": "610 km",
+                "seat": "05车06F",
+                "price": 53.5,
+                "note": "杭州中转"
+            },
+            {
+                "type": "Railway",
+                "date": "2019-06-22",
+                "from": "北京南站",
+                "to": "宁波站",
+                "vehicle": "G167",
+                "duration": "06:55:00",
+                "distance": "1709 km",
+                "seat": "04车04F",
+                "price": 446.5,
+                "note": "19夏返乡"
+            },
+            {
+                "type": "Railway",
+                "date": "2019-02-13",
+                "from": "宁波站",
+                "to": "北京南站",
+                "vehicle": "G60",
+                "duration": "06:51:00",
+                "distance": "1434 km",
+                "seat": "13车11F",
+                "price": 446.5,
+                "note": "19春返校"
+            },
+            {
+                "type": "Railway",
+                "date": "2019-01-24",
+                "from": "北京南站",
+                "to": "宁波站",
+                "vehicle": "G167",
+                "duration": "06:55:00",
+                "distance": "1709 km",
+                "seat": "07车10F",
+                "price": 446.5,
+                "note": "18冬返乡"
+            },
+            {
+                "type": "Railway",
+                "date": "2018-10-02",
+                "from": "天津站",
+                "to": "北京南站",
+                "vehicle": "C2070",
+                "duration": "00:35:00",
+                "distance": "127 km",
+                "seat": "07车12C",
+                "price": 54.5,
+                "note": "18京津返程"
+            },
+            {
+                "type": "Railway",
+                "date": "2018-08-29",
+                "from": "宁波站",
+                "to": "北京南站",
+                "vehicle": "G56",
+                "duration": "06:48:00",
+                "distance": "2011 km",
+                "seat": "13车09F",
+                "price": 446.5,
+                "note": "18秋入学"
+            },
+            {
+                "type": "Railway",
+                "date": "2017-08-27",
+                "from": "北京南站",
+                "to": "宁波站",
+                "vehicle": "G167",
+                "duration": "06:50:00",
+                "distance": "1691 km",
+                "seat": "12车03D",
+                "price": 595.5,
+                "note": "暑校返程，ayi的座号"
+            },
+            {
+                "type": "Railway",
+                "date": "2017-08-20",
+                "from": "宁波站",
+                "to": "北京南站",
+                "vehicle": "G168",
+                "duration": "07:30:00",
+                "distance": "1709 km",
+                "seat": "11车12B",
+                "price": 595.5,
+                "note": "暑校"
+            }
+        ];
+
+        // ========== 核心处理逻辑 ==========
+        // 1. 按行程区间分组并统计频次
+        const routeGroups = {};
+        const routeCounts = {};
+        travelSegments.forEach(segment => {
+            const key = `${segment.from}-${segment.to}`;
+            if (!routeGroups[key]) routeGroups[key] = [];
+            routeGroups[key].push(segment);
+            routeCounts[key] = (routeCounts[key] || 0) + 1;
+        });
+
+        // 2. 颜色映射函数（根据频次）
+        const getColorByCount = (count) => {
+            return count > 2 ? '#ff0000' :  // 高频次-红色
+                count > 1 ? '#ff8000' :  // 中频次-橙色
+                    '#00aa00';   // 低频次-绿色
+        };
+
+        // 3. 绘制路线（合并+热力效果）
+        Object.entries(routeGroups).forEach(([key, trips]) => {
+            const from = cityCoords[trips[0].from];
+            const to = cityCoords[trips[0].to];
+            const count = routeCounts[key];
+
+            // 创建路线（线宽和颜色反映频次）
+            const polyline = L.polyline([from, to], {
+                color: getColorByCount(count),
+                weight: 2 + count * 1.5,  // 频次越高线越粗
+                opacity: 0.7
+            }).addTo(map);
+
+            // 弹窗内容（合并显示所有行程）
+            const popupContent = `
+        <div style="max-width:250px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <b>${trips[0].from} → ${trips[0].to}</b>
+            <span class="route-count">${count}次</span>
+          </div>
+          <hr style="margin:5px 0">
+          <div style="max-height:150px;overflow-y:auto">
+            ${trips.map(trip => `
+              <div style="margin-bottom:8px;padding-bottom:5px;border-bottom:1px dashed #eee">
+                <div style="display:flex;justify-content:space-between">
+                  <span>${trip.date}</span>
+                  <span style="color:${getColorByCount(1)}">
+                    ${trip.type === 'Rail' ? '🚄' : '✈️'} ${trip.vehicle}
+                  </span>
+                </div>
+                <div>用时: ${trip.duration}</div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+            polyline.bindPopup(popupContent);
+        });
+
+        // ========== 添加图例 ==========
+        const legend = L.control({ position: 'bottomright' });
+        legend.onAdd = () => {
+            const div = L.DomUtil.create('div', 'legend');
+            div.innerHTML = `
+        <h4 style="margin:5px 0">行程频次</h4>
+        <div style="display:flex;align-items:center;margin:3px 0">
+          <div style="background:#ff0000;width:15px;height:15px;margin-right:5px"></div>
+          <span>高频次 (≥3次)</span>
+        </div>
+        <div style="display:flex;align-items:center;margin:3px 0">
+          <div style="background:#ff8000;width:15px;height:15px;margin-right:5px"></div>
+          <span>中频次 (2次)</span>
+        </div>
+        <div style="display:flex;align-items:center;margin:3px 0">
+          <div style="background:#00aa00;width:15px;height:15px;margin-right:5px"></div>
+          <span>低频次 (1次)</span>
+        </div>
+      `;
+            return div;
+        };
+        legend.addTo(map);
+    </script>
+</body>
+
+</html>
