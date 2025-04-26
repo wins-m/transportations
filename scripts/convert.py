@@ -75,8 +75,8 @@ def gen_travel_segments(df, tgt):
         res.append({
             'type': TRANS[a['类型']],
             'date': a['日期'].strftime('%Y-%m-%d') if a['日期'] is not None else '-',
-            'from': _mod2(_mod1(a['乘坐区间'].split('-')[0], kind, a['始发站']), kind=1),
-            'to': _mod2(_mod1(a['乘坐区间'].split('-')[-1], kind, a['终到站']), kind=1),
+            'from': _mod2(_mod1(a['乘坐区间'].split('-')[0], kind, a['始发站']), kind=kind),
+            'to': _mod2(_mod1(a['乘坐区间'].split('-')[-1], kind, a['终到站']), kind=kind),
             'vehicle': a['车次'],
             'time': a['时间'] if a['时间'] is not None else '-',
             'duration': cal_duration(a['时间'], False) if a['时间'] is not None else '-',
@@ -111,11 +111,11 @@ def _decide_trans_kind(kind):
     return kind
 
 
-def _mod2(x, kind=0):
-    if kind == 1:
+def _mod2(x, kind=None):
+    if kind == 'Airline':
         return x.split('T')[0]
     else:
-        return x.replace('机场', '').replace('航站楼', '')
+        return x  # .replace('机场', '').replace('航站楼', '')
 
 
 def _mod1(x, kind, ref):
@@ -178,7 +178,7 @@ def cache_coords(sr: pd.Series) -> dict:
     locs = {}
     for x0, ref in zip(sr['乘坐区间'].split('-'), [sr['始发站'], sr['终到站']]):
         x1 = _mod1(x0, kind, ref)
-        x2 = _mod2(x1, kind=1)
+        x2 = _mod2(x1, kind=kind)
 
         if x1 not in head:
             # TODO: Replace with your Amap API key
