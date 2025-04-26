@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>Transportation Records</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <style>
+        body {
+            margin: 0;
+        }
+
+        #map {
+            height: 100vh;
+            width: 100vw;
+        }
+
+        .legend {
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .control-panel {
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .route-popup {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="map"></div>
+    <script>
+        // 初始化地图
+        const map = L.map('map').setView([30, 110], 5);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 18,
+            attribution: '&copy; OpenStreetMap'
+        }).addTo(map);
+
+        // 城市坐标
+        const locCoords = {
+            "宁波站": [
+                29.8629414928399,
+                121.53739804767
+            ],
+            "杭州东站": [
+                30.2925,
+                120.2119
+            ],
+            "深圳宝安T3": [
+                22.627554,
+                113.81184
+            ],
+            "杭州萧山T4": [
+                30.234134,
+                120.430634
+            ],
+            "香港西九龙站": [
+                22.3047,
+                114.1614
+            ],
+        };
+
+        // 示例数据（包含重复路线）
+        const travelSegments = [
+            {
+                "type": "Railway",
+                "date": "2025-02-21",
+                "from": "杭州东站",
+                "to": "香港西九龙站",
+                "vehicle": "G899",
+                "time": "21:15-07:24(+1)",
+                "duration": "10:09:00",
+                "distance": "1662 km",
+                "seat": "09车032号上铺",
+                "price": 770,
+                "note": "香港行去程"
+            },
+            {
+                "type": "Airline",
+                "date": "2025-02-23",
+                "from": "深圳宝安T3",
+                "to": "杭州萧山T4",
+                "vehicle": "CA1734",
+                "time": "18:30-20:06",
+                "duration": "01:36:00",
+                "distance": "1179 km",
+                "seat": "21A",
+                "price": 490,
+                "note": "香港行返程"
+            },
+            {
+                "type": "Railway",
+                "date": "2025-04-02",
+                "from": "宁波站",
+                "to": "杭州东站",
+                "vehicle": "D3146",
+                "time": "19:38-20:42",
+                "duration": "01:04:00",
+                "distance": "1438 km",
+                "seat": "07车05A",
+                "price": 57,
+                "note": "积分兑换"
+            }
+        ];
+
+        // 颜色映射
+        const typeColors = { Railway: 'blue', Airline: 'red', Other: 'black' };
+
+        // ========= 方案1：合并相同路线 =========
+        const routeGroups = {};
+        travelSegments.forEach(segment => {
+            const key = `${segment.from}-${segment.to}`;
+            const key_rvs = `${segment.to}-${segment.from}`;
+            if (!routeGroups[key]) {
+                if (!routeGroups[key_rvs]) {
+                    routeGroups[key] = {
+                        type: segment.type,
+                        segments: [],
+                        polyline: null,
+                    };
+                    routeGroups[key].segments.push(segment);
+                } else {
+                    routeGroups[key_rvs].segments.push(segment);
+                    return;
+                }
+            } else {
+                routeGroups[key].segments.push(segment);
+            }
+        });
+
+        // ========= 方案5：交互式筛选控件 =========
+        const controlPanel = L.control({ position: 'topright' });
+        controlPanel.onAdd = () => {
+            const div = L.DomUtil.create('div', 'control-panel');
+            div.innerHTML = `
+              <h4 style="margin:0 0 8px 0">筛选条件</h4>
+              <select id="route-type" style="width:100%">
+                <option value="all">所有类型</option>
+                <option value="Railway">铁路</option>
+                <option value="Airline">航空</option>
+                <option value="Other">其他</option>
+              </select>
+              <div id="route-count" style="margin-top:5px;font-size:0.8em">
+                共 ${travelSegments.length} 次行程
+              </div>
+            `;
+            return div;
+        };
+        controlPanel.addTo(map);
+
+        // ========= 绘制合并路线 =========
+        Object.entries(routeGroups).forEach(([key, group]) => {
+            const from = locCoords[group.segments[0].from];
+            const to = locCoords[group.segments[0].to];
+
+            // 创建路线（线宽反映行程次数）
+            group.polyline = L.polyline([from, to], {
+                color: typeColors[group.type],
+                weight: 5 + Math.min(group.segments.length / 2, 10), // 频次越高越粗
+                opacity: 0.4 + Math.min(group.segments.length * 0.05, 0.6),
+                _routeType: group.type // 自定义属性用于筛选
+            }).addTo(map);
+
+            // 合并弹窗内容
+            const popupContent = `
+                <div class="route-popup">
+                  <b>${group.segments[0].from} -️ ${group.segments[0].to}</b>
+                  <small>（${group.segments[0].distance}, 共 ${group.segments.length} 次行程）</small>
+                  <hr>
+                  ${group.segments.map(trip => `
+                    <div style="margin-bottom:8px;padding-bottom:5px;border-bottom:1px dashed #eee">
+                      <div style="display:flex;justify-content:space-between">
+                        <span>${trip.from === group.segments[0].from ? '➡️' : '⬅️'}️ ${trip.date}</span>
+                        <span style="color:${typeColors[trip.type]}">${trip.type === 'Railway' ? '🚄' : trip.type === 'Airline' ? '✈️' : '🚌'} ${trip.vehicle}</span>
+                      </div>
+                      <div style="display:flex;justify-content:space-between">
+                        <span>${trip.time} | ${trip.seat} | ¥${trip.price}</span>
+                        <span> [${trip.note}]</span>
+                      </div>
+                    </div>
+                  `).join('')}
+                </div>
+              `;
+            group.polyline.bindPopup(popupContent);
+        });
+
+        // ========= 筛选功能 =========
+        document.getElementById('route-type').addEventListener('change', (e) => {
+            const selectedType = e.target.value;
+            let visibleCount = 0;
+
+            Object.values(routeGroups).forEach(group => {
+                const isVisible = selectedType === 'all' || group.type === selectedType;
+                group.polyline.setStyle({
+                    weight: 5 + Math.min(group.segments.length / 2, 10),
+                    opacity: isVisible ? 0.4 + Math.min(group.segments.length * 0.05, 0.6) : 0.1
+                });
+                if (isVisible) visibleCount += group.segments.length;
+            });
+
+            document.getElementById('route-count').textContent =
+                `显示 ${visibleCount}/${travelSegments.length} 次行程`;
+        });
+
+        // ========= 图例和标记 =========
+        const legend = L.control({ position: 'bottomright' });
+        legend.onAdd = () => {
+            const div = L.DomUtil.create('div', 'legend');
+            div.innerHTML = `
+              <h4 style="margin:4px 0">图例</h4>
+              <div style="display:flex;align-items:center;gap:6px">
+                <div style="background:blue;width:16px;height:16px"></div>
+                <span>铁路</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:6px">
+                <div style="background:red;width:16px;height:16px"></div>
+                <span>航空</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:6px;margin:4px 0">
+                <div style="background:black;width:16px;height:16px"></div>
+                <span>其他</span>
+              </div>
+            `;
+            return div;
+        };
+        legend.addTo(map);
+
+        // 添加城市标记
+        const smallIcon = L.icon({
+            iconUrl: 'https://unpkg.com/leaflet/dist/images/marker-icon.png',
+            iconSize: [10, 15],
+            iconAnchor: [5, 15]
+        });
+        Object.entries(locCoords).forEach(([name, coords]) => {
+            L.marker(coords, { icon: smallIcon })
+                .addTo(map)
+                .bindPopup(`<b>${name}</b><br>坐标: ${coords[0].toFixed(4)}, ${coords[1].toFixed(4)}`);
+        });
+
+        // 自动缩放
+        var markers = [];
+        Object.keys(locCoords).forEach(function (city) {
+            markers.push(L.latLng(locCoords[city]));
+        });
+        map.fitBounds(L.latLngBounds(markers), { padding: [50, 50] });
+
+    </script>
+</body>
+
+</html>

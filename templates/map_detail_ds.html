@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <title>交通轨迹地图</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <style>
+    body {
+      margin: 0;
+    }
+
+    #map {
+      height: 100vh;
+      width: 100vw;
+    }
+
+    .legend {
+      padding: 10px;
+      background: white;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    }
+  </style>
+</head>
+
+<body>
+  <div id="map"></div>
+  <script>
+    var map = L.map('map').setView([30, 110], 5);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 18,
+      attribution: '&copy; OpenStreetMap'
+    }).addTo(map);
+
+    // City coordinates
+    var locCoords = {
+      "宁波站": [
+        29.8629414928399,
+        121.53739804767
+      ],
+      "杭州东站": [
+        30.2925,
+        120.2119
+      ],
+      "深圳宝安T3": [
+        22.627554,
+        113.81184
+      ],
+      "杭州萧山T4": [
+        30.234134,
+        120.430634
+      ],
+      "香港西九龙站": [
+        22.3047,
+        114.1614
+      ],
+    };
+
+    // 5 sample routes (sorted by type and date)
+    var travelSegments = [
+      {
+        "type": "Railway",
+        "date": "2025-04-02",
+        "from": "宁波站",
+        "to": "杭州东站",
+        "vehicle": "D3146",
+        "duration": "01:04:00",
+        "distance": "1438 km",
+        "seat": "07车05A",
+        "price": 57,
+        "note": "积分兑换"
+      },
+      {
+        "type": "Airline",
+        "date": "2025-02-23",
+        "from": "深圳宝安T3",
+        "to": "杭州萧山T4",
+        "vehicle": "CA1734",
+        "duration": "01:36:00",
+        "distance": "1179 km",
+        "seat": "21A",
+        "price": 490,
+        "note": "香港行返程"
+      },
+      {
+        "type": "Railway",
+        "date": "2025-02-21",
+        "from": "杭州东站",
+        "to": "香港西九龙站",
+        "vehicle": "G899",
+        "duration": "10:09:00",
+        "distance": "1662 km",
+        "seat": "09车032号上铺",
+        "price": 770,
+        "note": "香港行去程"
+      },
+
+    ];
+
+    // Create smaller markers
+    var smallIcon = L.icon({
+      iconUrl: 'https://unpkg.com/leaflet/dist/images/marker-icon.png',
+      iconSize: [20, 30],  // Smaller size (original: [25, 41])
+      iconAnchor: [10, 30], // Anchor point adjustment
+      popupAnchor: [0, -30] // Popup position adjustment
+    });
+    // Add markers with smaller size
+    Object.keys(locCoords).forEach(function (city) {
+      var coords = locCoords[city];
+      L.marker(coords, { icon: smallIcon })
+        .addTo(map)
+        .bindPopup("<b>" + city + "</b><br>坐标: " + coords[0].toFixed(4) + ", " + coords[1].toFixed(4));
+    });
+
+    // Sort by type (Railway > Airline > Other) then by date (newest first)
+    travelSegments.sort((a, b) => {
+      const typeOrder = { Railway: 1, Airline: 2, Other: 3 };
+      if (typeOrder[a.type] !== typeOrder[b.type]) {
+        return typeOrder[a.type] - typeOrder[b.type];
+      }
+      return new Date(b.date) - new Date(a.date);
+    });
+
+    // Draw routes with enhanced popups
+    travelSegments.forEach(segment => {
+      const from = locCoords[segment.from];
+      const to = locCoords[segment.to];
+
+      if (from && to) {
+        const color = {
+          Railway: 'blue',
+          Airline: 'red',
+          Other: 'gray'
+        }[segment.type];
+
+        const polyline = L.polyline([from, to], {
+          color: color,
+          weight: 3,
+          opacity: 0.7
+        }).addTo(map);
+
+        // Detailed popup with icons
+        const popupContent = `
+          <div style="min-width:200px">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+              <span style="font-weight:bold;font-size:1.1em">${segment.from} → ${segment.to}</span>
+              <span style="background:${color};color:white;padding:2px 6px;border-radius:4px;font-size:0.8em">
+                ${segment.type === 'Railway' ? '🚄 铁路' : segment.type === 'Airline' ? '✈️ 航空' : '🚌 其他'}
+              </span>
+            </div>
+            <table style="width:100%;font-size:0.9em">
+              <tr><td style="width:60px">日期：</td><td>${segment.date}</td></tr>
+              <tr><td>车次：</td><td>${segment.vehicle}</td></tr>
+              <tr><td>用时：</td><td>${segment.duration}</td></tr>
+              ${segment.distance ? `<tr><td>距离：</td><td>${segment.distance}</td></tr>` : ''}
+              ${segment.seat ? `<tr><td>座位：</td><td>${segment.seat}</td></tr>` : ''}
+              ${segment.price ? `<tr><td>票价：</td><td>${segment.price}元</td></tr>` : ''}
+              ${segment.note ? `<tr><td>备注：</td><td><i>${segment.note}</i></td></tr>` : ''}
+            </table>
+          </div>
+        `;
+
+        polyline.bindPopup(popupContent);
+      }
+    });
+
+    // Enhanced legend
+    var legend = L.control({ position: 'bottomright' });
+    legend.onAdd = function () {
+      var div = L.DomUtil.create('div', 'legend');
+      div.innerHTML = `
+        <h4 style="margin:4px 0">交通类型</h4>
+        <div style="display:flex;align-items:center;gap:6px;margin:4px 0">
+          <div style="background:blue;width:16px;height:16px"></div>
+          <span>铁路</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;margin:4px 0">
+          <div style="background:red;width:16px;height:16px"></div>
+          <span>航空</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;margin:4px 0">
+          <div style="background:green;width:16px;height:16px"></div>
+          <span>其他</span>
+        </div>
+      `;
+      return div;
+    };
+    legend.addTo(map);
+
+    // Auto-fit map to show all markers
+    var markers = [];
+    Object.keys(locCoords).forEach(function (city) {
+      markers.push(L.latLng(locCoords[city]));
+    });
+    map.fitBounds(L.latLngBounds(markers), { padding: [50, 50] });
+
+  </script>
+</body>
+
+</html>
