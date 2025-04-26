@@ -115,7 +115,7 @@ def _mod2(x, kind=None):
     if kind == 'Airline':
         return x.split('T')[0]
     else:
-        return x  # .replace('机场', '').replace('航站楼', '')
+        return x#.replace('机场', '').replace('航站楼', '')
 
 
 def _mod1(x, kind, ref):
@@ -177,24 +177,23 @@ def cache_coords(sr: pd.Series) -> dict:
     # Rusult locations
     locs = {}
     for x0, ref in zip(sr['乘坐区间'].split('-'), [sr['始发站'], sr['终到站']]):
-        x1 = _mod1(x0, kind, ref)
-        x2 = _mod2(x1, kind=kind)
+        _ = _mod1(x0, kind, ref)
+        x2 = _mod2(_, kind=kind)
 
-        if x1 not in head:
-            # TODO: Replace with your Amap API key
+        if x2 not in head:
             API_KEY = load_api_keys()
-            res = get_coordinates(x1, API_KEY)
+            res = get_coordinates(x2, API_KEY)
             if res is None:
-                print(f"Coordinates for {x1} not found.")
+                print(f"Coordinates for {x2} not found.")
                 continue
             else:
                 lat, lon = res
-                print(f"Find coordinates of {x1}: {lat}, {lon}")
+                print(f"Find coordinates of {x2}: {lat}, {lon}")
                 chg_flag = 1
-                head[x1] = [lat, lon]
+                head[x2] = [lat, lon]
                 locs[x2] = [lat, lon]
         else:
-            locs[x2] = head[x1]
+            locs[x2] = head[x2]
 
     if chg_flag:
         with open(src_coords, 'w', encoding='utf-8') as f:
@@ -203,9 +202,9 @@ def cache_coords(sr: pd.Series) -> dict:
     return locs
 
 
-def load_api_keys(src='./scripts/config.yaml'):
+def load_api_keys(src='./scripts/configs.yaml'):
     with open(src, 'r') as f:
-        conf = yanl.safe_load(f)
+        conf = yaml.safe_load(f)
     return conf['amap_api']
 
 
