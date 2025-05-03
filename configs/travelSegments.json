@@ -47,8 +47,8 @@
     "time": "7:00-12:25(+1)",
     "duration": "29:25:00",
     "distance": "144 km",
-    "seat": "-",
-    "price": "-",
+    "seat": NaN,
+    "price": NaN,
     "note": "18京津"
   },
   {
@@ -151,8 +151,8 @@
     "time": NaN,
     "duration": "",
     "distance": "128.5 km",
-    "seat": "-",
-    "price": "-",
+    "seat": NaN,
+    "price": NaN,
     "note": NaN
   },
   {
@@ -164,8 +164,8 @@
     "time": NaN,
     "duration": "",
     "distance": "75.5 km",
-    "seat": "-",
-    "price": "-",
+    "seat": NaN,
+    "price": NaN,
     "note": NaN
   },
   {
@@ -177,8 +177,8 @@
     "time": NaN,
     "duration": "",
     "distance": "103.3 km",
-    "seat": "-",
-    "price": "-",
+    "seat": NaN,
+    "price": NaN,
     "note": NaN
   },
   {
@@ -203,8 +203,8 @@
     "time": "10:53-18:00",
     "duration": "07:07:00",
     "distance": "72 km",
-    "seat": "-",
-    "price": "-",
+    "seat": NaN,
+    "price": NaN,
     "note": NaN
   },
   {
@@ -216,8 +216,8 @@
     "time": "06:00-16:29",
     "duration": "10:29:00",
     "distance": "83 km",
-    "seat": "-",
-    "price": "-",
+    "seat": NaN,
+    "price": NaN,
     "note": NaN
   },
   {
@@ -268,8 +268,8 @@
     "time": "07:20-16:03",
     "duration": "08:43:00",
     "distance": "95.07 km",
-    "seat": "-",
-    "price": "-",
+    "seat": NaN,
+    "price": NaN,
     "note": NaN
   },
   {
@@ -281,8 +281,8 @@
     "time": "06:27-18:11",
     "duration": "11:44:00",
     "distance": "118.9 km",
-    "seat": "-",
-    "price": "-",
+    "seat": NaN,
+    "price": NaN,
     "note": NaN
   },
   {
@@ -294,8 +294,8 @@
     "time": "07:22-13:46",
     "duration": "06:24:00",
     "distance": "74.14 km",
-    "seat": "-",
-    "price": "-",
+    "seat": NaN,
+    "price": NaN,
     "note": NaN
   },
   {
@@ -307,8 +307,8 @@
     "time": "06:09-17:37",
     "duration": "11:28:00",
     "distance": "114.7 km",
-    "seat": "-",
-    "price": "-",
+    "seat": NaN,
+    "price": NaN,
     "note": NaN
   },
   {
@@ -320,8 +320,8 @@
     "time": "05:56-12:30",
     "duration": "06:34:00",
     "distance": "91.79 km",
-    "seat": "-",
-    "price": "-",
+    "seat": NaN,
+    "price": NaN,
     "note": NaN
   },
   {
@@ -333,8 +333,8 @@
     "time": "06:16-18:14",
     "duration": "11:58:00",
     "distance": "116.42 km",
-    "seat": "-",
-    "price": "-",
+    "seat": NaN,
+    "price": NaN,
     "note": NaN
   },
   {
@@ -346,8 +346,8 @@
     "time": "07:08-18:00",
     "duration": "10:52:00",
     "distance": "95.1 km",
-    "seat": "-",
-    "price": "-",
+    "seat": NaN,
+    "price": NaN,
     "note": NaN
   },
   {
@@ -359,8 +359,8 @@
     "time": "06:29-18:02",
     "duration": "11:33:00",
     "distance": "122.1 km",
-    "seat": "-",
-    "price": "-",
+    "seat": NaN,
+    "price": NaN,
     "note": NaN
   },
   {
@@ -372,8 +372,8 @@
     "time": "06:28-19:01",
     "duration": "12:33:00",
     "distance": "122.95 km",
-    "seat": "-",
-    "price": "-",
+    "seat": NaN,
+    "price": NaN,
     "note": NaN
   },
   {
@@ -385,8 +385,8 @@
     "time": "06:44-20:22",
     "duration": "13:38:00",
     "distance": "153.85 km",
-    "seat": "-",
-    "price": "-",
+    "seat": NaN,
+    "price": NaN,
     "note": NaN
   },
   {
@@ -398,8 +398,8 @@
     "time": "06:07-20:55",
     "duration": "14:48:00",
     "distance": "145.2 km",
-    "seat": "-",
-    "price": "-",
+    "seat": NaN,
+    "price": NaN,
     "note": NaN
   },
   {
@@ -463,8 +463,8 @@
     "time": "07:18-13:04(+1)",
     "duration": "29:46:00",
     "distance": "163.74 km",
-    "seat": "-",
-    "price": "-",
+    "seat": NaN,
+    "price": NaN,
     "note": "19京津"
   },
   {
@@ -491,7 +491,7 @@
     "distance": "1434 km",
     "seat": "06车13F",
     "price": 446.5,
-    "note": "19冬返乡；青岛-徐州-杭州"
+    "note": "19冬返乡；青岛徐州杭州"
   },
   {
     "type": "Railway",
@@ -554,7 +554,7 @@
     "time": NaN,
     "duration": "",
     "distance": "nan km",
-    "seat": "-",
+    "seat": NaN,
     "price": NaN,
     "note": "巴松措、雅鲁藏布大峡谷"
   },
@@ -567,7 +567,7 @@
     "time": NaN,
     "duration": "",
     "distance": "nan km",
-    "seat": "-",
+    "seat": NaN,
     "price": NaN,
     "note": "南迦巴瓦峰、卡定沟"
   },
@@ -580,7 +580,7 @@
     "time": NaN,
     "duration": "",
     "distance": "nan km",
-    "seat": "-",
+    "seat": NaN,
     "price": NaN,
     "note": "羊卓雍措、卡若拉冰川"
   },
@@ -593,7 +593,7 @@
     "time": NaN,
     "duration": "",
     "distance": "nan km",
-    "seat": "-",
+    "seat": NaN,
     "price": NaN,
     "note": "嘉措拉山、珠峰大本营"
   },
@@ -606,7 +606,7 @@
     "time": NaN,
     "duration": "",
     "distance": "nan km",
-    "seat": "-",
+    "seat": NaN,
     "price": NaN,
     "note": NaN
   },
@@ -749,7 +749,7 @@
     "time": NaN,
     "duration": "",
     "distance": "292 km",
-    "seat": "-",
+    "seat": NaN,
     "price": NaN,
     "note": NaN
   },
@@ -762,7 +762,7 @@
     "time": NaN,
     "duration": "",
     "distance": "292 km",
-    "seat": "-",
+    "seat": NaN,
     "price": NaN,
     "note": NaN
   },
@@ -1279,8 +1279,8 @@
     "from": "杭州南站",
     "to": "广州站",
     "vehicle": "T169",
-    "time": "13:35-04:51",
-    "duration": "-9:16:00",
+    "time": "13:35-04:51(+1)",
+    "duration": "15:16:00",
     "distance": "1410 km",
     "seat": "06车005号上铺",
     "price": 296.5,
@@ -1412,7 +1412,7 @@
     "time": "08:30-18:00",
     "duration": "09:30:00",
     "distance": "- km",
-    "seat": "-",
+    "seat": NaN,
     "price": 122,
     "note": "经停 Pak Bang 过夜"
   },
@@ -1425,8 +1425,8 @@
     "time": "08:00-18:00",
     "duration": "10:00:00",
     "distance": "- km",
-    "seat": "-",
-    "price": "-",
+    "seat": NaN,
+    "price": NaN,
     "note": NaN
   },
   {
@@ -1711,8 +1711,8 @@
     "time": "08:20-17:03",
     "duration": "08:43:00",
     "distance": "150.73 km",
-    "seat": "-",
-    "price": "-",
+    "seat": NaN,
+    "price": NaN,
     "note": "参加环舟山"
   },
   {
@@ -1737,8 +1737,8 @@
     "time": "17:00-23:00",
     "duration": "06:00:00",
     "distance": "233 km",
-    "seat": "-",
-    "price": "-",
+    "seat": NaN,
+    "price": NaN,
     "note": "参加环舟山，经宁波取车"
   },
   {
@@ -1855,8 +1855,8 @@
     "duration": "01:30:00",
     "distance": "59 km",
     "seat": NaN,
-    "price": 115,
-    "note": NaN
+    "price": 136.8,
+    "note": "淘宝代购"
   },
   {
     "type": "Other",

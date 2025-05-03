@@ -8,7 +8,7 @@ def main():
     update_map_html(coords='./configs/locCoords.json',
                     segs='./configs/travelSegments.json',
                     tamp='./templates/map_heat16_ds.html',
-                    tgt='./incomming.html')
+                    tgt='./incoming.html')
 
 
 def update_map_html(coords, segs, tamp, tgt):
@@ -37,7 +37,7 @@ def update_map_html(coords, segs, tamp, tgt):
             for pattern, js_replacement in zip([r"const\s+locCoords\s*=\s*\{.*?\};",
                                                 r"const\s+travelSegments\s*=\s*\[.*?\];"],
                                                [f"const locCoords = {loc_js};".replace("], ", "],\n\t\t\t"),
-                                                f"const travelSegments = {seg_js};".replace("{'type'", "\n\t\t\t{'type'").replace('nan', 'NaN')]):
+                                                f"const travelSegments = {seg_js};".replace("{'type'", "\n\t\t\t{'type'").replace('nan', "'-'")]):
                 pattern = re.compile(pattern, re.DOTALL)
                 # Replace the JS variable with updated JSON
                 script.string = pattern.sub(js_replacement, script.string)
