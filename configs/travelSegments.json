@@ -1873,6 +1873,32 @@
   },
   {
     "type": "Other",
+    "date": "2025-05-11",
+    "from": "Fujikawaguchi kokoko",
+    "to": "Fuji Subaru Line 5th Station",
+    "vehicle": "To Fuji-Subaru Line 5th Station",
+    "time": "10:43-11:30",
+    "duration": "00:47:00",
+    "distance": "nan km",
+    "seat": NaN,
+    "price": 86,
+    "note": NaN
+  },
+  {
+    "type": "Other",
+    "date": "2025-05-11",
+    "from": "Sangome",
+    "to": "Fujisansekaiisansenta",
+    "vehicle": "To Mt.Fuji Station",
+    "time": "15:08-15:31",
+    "duration": "00:23:00",
+    "distance": "nan km",
+    "seat": NaN,
+    "price": 60.5,
+    "note": NaN
+  },
+  {
+    "type": "Other",
     "date": "2025-05-12",
     "from": "Kawaguchiko Eki",
     "to": "Fujisawa Eki Kitaguchi",
