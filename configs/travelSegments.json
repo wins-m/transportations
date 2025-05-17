@@ -1900,6 +1900,19 @@
   {
     "type": "Other",
     "date": "2025-05-12",
+    "from": "Kodachi iriguchi",
+    "to": "Lake Saiko Ent.",
+    "vehicle": "To Shinfuji-eki",
+    "time": "09:12-09:32",
+    "duration": "00:20:00",
+    "distance": "nan km",
+    "seat": NaN,
+    "price": NaN,
+    "note": NaN
+  },
+  {
+    "type": "Other",
+    "date": "2025-05-12",
     "from": "Kawaguchiko Eki",
     "to": "Fujisawa Eki Kitaguchi",
     "vehicle": "Fujisawa Eki Kitaguchi",
