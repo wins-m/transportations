@@ -25,6 +25,6 @@ if __name__ == "__main__":
                         help='Path to the travel segments file. (default: ./configs/travelSegments)')
     parser.add_argument('--tamp', type=str, default='./templates/map_heat16_ds.html',
                         help='Path to the template HTML file. (default: ./templates/map_heat16_ds.html)')
-    parser.add_argument('--tgt', type=str, default='./incoming.html',
-                        help='Path to the target HTML file. (default: ./incoming.html)')
+    parser.add_argument('--tgt', type=str, default='./incomming.html',
+                        help='Path to the target HTML file. (default: ./incomming.html)')
     main(args=parser.parse_args())
