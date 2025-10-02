@@ -1939,6 +1939,19 @@
   {
     "type": "Railway",
     "date": "2025-05-13",
+    "from": "长谷（神奈川）站",
+    "to": "湘南海岸公园站",
+    "vehicle": "Local Fujisawa",
+    "time": "15:57-16:21",
+    "duration": "00:24:00",
+    "distance": "nan km",
+    "seat": NaN,
+    "price": 13,
+    "note": NaN
+  },
+  {
+    "type": "Railway",
+    "date": "2025-05-13",
     "from": "Enoshima Station",
     "to": "Fujisawa Station",
     "vehicle": "Local Fujisawa",
