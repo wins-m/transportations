@@ -555,7 +555,7 @@
     "duration": "",
     "distance": "nan km",
     "seat": "-",
-    "price": NaN,
+    "price": "-",
     "note": "巴松措、雅鲁藏布大峡谷"
   },
   {
@@ -568,7 +568,7 @@
     "duration": "",
     "distance": "nan km",
     "seat": "-",
-    "price": NaN,
+    "price": "-",
     "note": "南迦巴瓦峰、卡定沟"
   },
   {
@@ -581,7 +581,7 @@
     "duration": "",
     "distance": "nan km",
     "seat": "-",
-    "price": NaN,
+    "price": "-",
     "note": "羊卓雍措、卡若拉冰川"
   },
   {
@@ -594,7 +594,7 @@
     "duration": "",
     "distance": "nan km",
     "seat": "-",
-    "price": NaN,
+    "price": "-",
     "note": "嘉措拉山、珠峰大本营"
   },
   {
@@ -607,7 +607,7 @@
     "duration": "",
     "distance": "nan km",
     "seat": "-",
-    "price": NaN,
+    "price": "-",
     "note": NaN
   },
   {
@@ -750,7 +750,7 @@
     "duration": "",
     "distance": "292 km",
     "seat": "-",
-    "price": NaN,
+    "price": "-",
     "note": NaN
   },
   {
@@ -763,7 +763,7 @@
     "duration": "",
     "distance": "292 km",
     "seat": "-",
-    "price": NaN,
+    "price": "-",
     "note": NaN
   },
   {
@@ -854,7 +854,7 @@
     "duration": "",
     "distance": "nan km",
     "seat": NaN,
-    "price": NaN,
+    "price": "-",
     "note": "经都江堰"
   },
   {
@@ -867,7 +867,7 @@
     "duration": "",
     "distance": "nan km",
     "seat": NaN,
-    "price": NaN,
+    "price": "-",
     "note": "经黄龙"
   },
   {
@@ -880,7 +880,7 @@
     "duration": "",
     "distance": "nan km",
     "seat": NaN,
-    "price": NaN,
+    "price": "-",
     "note": "经折多山"
   },
   {
@@ -893,7 +893,7 @@
     "duration": "",
     "distance": "nan km",
     "seat": NaN,
-    "price": NaN,
+    "price": "-",
     "note": "经卡子拉山、白塔"
   },
   {
@@ -906,7 +906,7 @@
     "duration": "",
     "distance": "nan km",
     "seat": NaN,
-    "price": NaN,
+    "price": "-",
     "note": "徒步前往"
   },
   {
@@ -919,7 +919,7 @@
     "duration": "",
     "distance": "nan km",
     "seat": NaN,
-    "price": NaN,
+    "price": "-",
     "note": "徒步返回"
   },
   {
@@ -932,7 +932,7 @@
     "duration": "",
     "distance": "nan km",
     "seat": NaN,
-    "price": NaN,
+    "price": "-",
     "note": "经理塘"
   },
   {
@@ -945,7 +945,7 @@
     "duration": "",
     "distance": "nan km",
     "seat": NaN,
-    "price": NaN,
+    "price": "-",
     "note": "经墨石公园"
   },
   {
@@ -1439,7 +1439,7 @@
     "duration": "02:00:00",
     "distance": "103 km",
     "seat": NaN,
-    "price": NaN,
+    "price": "THB 1200",
     "note": "和一群白人包车"
   },
   {
@@ -1478,7 +1478,7 @@
     "duration": "15:49:00",
     "distance": "nan km",
     "seat": NaN,
-    "price": NaN,
+    "price": "THB 848",
     "note": NaN
   },
   {
@@ -1492,7 +1492,7 @@
     "distance": "nan km",
     "seat": NaN,
     "price": "RM 11.4",
-    "note": NaN
+    "note": "购票机断网给了 THB 107"
   },
   {
     "type": "Railway",
@@ -1504,7 +1504,7 @@
     "duration": "01:56:00",
     "distance": "nan km",
     "seat": NaN,
-    "price": NaN,
+    "price": "RM 12.8",
     "note": NaN
   },
   {
@@ -1517,7 +1517,7 @@
     "duration": "02:34:00",
     "distance": "nan km",
     "seat": NaN,
-    "price": NaN,
+    "price": "RM 46.0",
     "note": NaN
   },
   {
@@ -1543,7 +1543,7 @@
     "duration": "04:30:00",
     "distance": "nan km",
     "seat": NaN,
-    "price": NaN,
+    "price": "RM 80.15",
     "note": NaN
   },
   {
@@ -1738,7 +1738,7 @@
     "duration": "06:00:00",
     "distance": "233 km",
     "seat": NaN,
-    "price": NaN,
+    "price": "-",
     "note": "参加环舟山，经宁波取车"
   },
   {
