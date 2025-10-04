@@ -413,21 +413,28 @@
         });
 
         // ========= 方案5：交互式筛选控件 =========
+        // 获取所有年份，去重排序
+        const years = Array.from(new Set(travelSegments.map(seg => seg.date.slice(0, 4)))).sort();
+
         const controlPanel = L.control({ position: 'topright' });
         controlPanel.onAdd = () => {
             const div = L.DomUtil.create('div', 'control-panel');
             div.innerHTML = `
-              <h4 style="margin:0 0 8px 0">筛选条件</h4>
-              <select id="route-type" style="width:100%">
-                <option value="all">所有类型</option>
-                <option value="Railway">铁路</option>
-                <option value="Airline">航空</option>
-                <option value="Other">其他</option>
-              </select>
-              <div id="route-count" style="margin-top:5px;font-size:0.8em">
-                共 ${travelSegments.length} 次行程
-              </div>
-            `;
+                            <h4 style="margin:0 0 8px 0">筛选条件</h4>
+                            <select id="route-type" style="width:100%;margin-bottom:6px">
+                                <option value="all">所有类型</option>
+                                <option value="Railway">铁路</option>
+                                <option value="Airline">航空</option>
+                                <option value="Other">其他</option>
+                            </select>
+                            <select id="route-year" style="width:100%;margin-bottom:6px">
+                                <option value="all">所有年份</option>
+                                ${years.map(y => `<option value="${y}">${y}年</option>`).join('')}
+                            </select>
+                            <div id="route-count" style="margin-top:5px;font-size:0.8em">
+                                共 ${travelSegments.length} 次行程
+                            </div>
+                        `;
             return div;
         };
         controlPanel.addTo(map);
@@ -469,22 +476,33 @@
         });
 
         // ========= 筛选功能 =========
-        document.getElementById('route-type').addEventListener('change', (e) => {
-            const selectedType = e.target.value;
+
+        function updateRouteFilter() {
+            const selectedType = document.getElementById('route-type').value;
+            const selectedYear = document.getElementById('route-year').value;
             let visibleCount = 0;
 
             Object.values(routeGroups).forEach(group => {
-                const isVisible = selectedType === 'all' || group.type === selectedType;
+                // 判断该组内是否有符合条件的行程
+                const filteredSegments = group.segments.filter(seg => {
+                    const typeMatch = selectedType === 'all' || seg.type === selectedType;
+                    const yearMatch = selectedYear === 'all' || seg.date.slice(0, 4) === selectedYear;
+                    return typeMatch && yearMatch;
+                });
+                const isVisible = filteredSegments.length > 0;
                 group.polyline.setStyle({
                     weight: 5 + Math.min(group.segments.length / 2, 10),
                     opacity: isVisible ? 0.4 + Math.min(group.segments.length * 0.05, 0.6) : 0.1
                 });
-                if (isVisible) visibleCount += group.segments.length;
+                if (isVisible) visibleCount += filteredSegments.length;
             });
 
             document.getElementById('route-count').textContent =
                 `显示 ${visibleCount}/${travelSegments.length} 次行程`;
-        });
+        }
+
+        document.getElementById('route-type').addEventListener('change', updateRouteFilter);
+        document.getElementById('route-year').addEventListener('change', updateRouteFilter);
 
         // ========= 图例和标记 =========
         const legend = L.control({ position: 'bottomright' });
