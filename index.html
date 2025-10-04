@@ -566,10 +566,51 @@
             iconSize: [10, 15],
             iconAnchor: [5, 15]
         });
+
+        // 计算每个城市的首次出发和首次抵达日期
+        const cityFirstArrive = {};
+        const cityFirstDepart = {};
+        travelSegments.forEach(seg => {
+            // 统计到达城市
+            const toCity = seg.to;
+            if (!cityFirstArrive[toCity] || seg.date < cityFirstArrive[toCity]) {
+                cityFirstArrive[toCity] = seg.date;
+            }
+            // 统计出发城市
+            const fromCity = seg.from;
+            if (!cityFirstDepart[fromCity] || seg.date < cityFirstDepart[fromCity]) {
+                cityFirstDepart[fromCity] = seg.date;
+            }
+        });
+
         Object.entries(locCoords).forEach(([name, coords]) => {
+            let popup = `<b>${name}</b><br>坐标: ${coords[0].toFixed(4)}, ${coords[1].toFixed(4)}`;
+            const arrive = cityFirstArrive[name];
+            const depart = cityFirstDepart[name];
+            let showType = null, showDate = null;
+            if (arrive && depart) {
+                if (depart < arrive) {
+                    showType = '首次出发';
+                    showDate = depart;
+                } else {
+                    showType = '首次抵达';
+                    showDate = arrive;
+                }
+            } else if (depart) {
+                showType = '首次出发';
+                showDate = depart;
+            } else if (arrive) {
+                showType = '首次抵达';
+                showDate = arrive;
+            }
+            if (showType && showDate) {
+                const d = showDate.split('-');
+                const dateStr = `${d[0]}.${parseInt(d[1],10)}.${parseInt(d[2],10)}`;
+                popup += `<br>${showType}: <b>${dateStr}</b>`;
+            }
             L.marker(coords, { icon: smallIcon })
                 .addTo(map)
-                .bindPopup(`<b>${name}</b><br>坐标: ${coords[0].toFixed(4)}, ${coords[1].toFixed(4)}`);
+                .bindPopup(popup);
         });
 
         // 自动缩放
