@@ -501,6 +501,27 @@
                         weight: 5 + Math.min(segCount / 2, 10),
                         opacity: 0.4 + Math.min(segCount * 0.05, 0.6)
                     });
+                    // 更新弹窗内容为筛选后的行程
+                    const popupContent = `
+                        <div class="route-popup">
+                          <b>${group.segments[0].from} -️ ${group.segments[0].to}</b>
+                          <small>（${filteredSegments[0]?.distance || ''}, 共 ${segCount} 次行程）</small>
+                          <hr>
+                          ${filteredSegments.map(trip => `
+                            <div style="margin-bottom:8px;padding-bottom:5px;border-bottom:1px dashed #eee">
+                              <div style="display:flex;justify-content:space-between">
+                                <span>${trip.from === group.segments[0].from ? '➡️' : '⬅️'}️ ${trip.date}</span>
+                                <span style="color:${typeColors[trip.type]}">${trip.type === 'Railway' ? '🚄' : trip.type === 'Airline' ? '✈️' : '🚌'} ${trip.vehicle}</span>
+                              </div>
+                              <div style="display:flex;justify-content:space-between">
+                                <span>${trip.time} | ${trip.seat} | ¥${trip.price}</span>
+                                <span> [${trip.note}]</span>
+                              </div>
+                            </div>
+                          `).join('')}
+                        </div>
+                      `;
+                    group.polyline.bindPopup(popupContent);
                     visibleCount += segCount;
                 } else {
                     if (map.hasLayer(group.polyline)) {
