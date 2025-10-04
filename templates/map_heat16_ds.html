@@ -205,6 +205,7 @@
 
         // ========= 筛选功能 =========
 
+
         function updateRouteFilter() {
             const selectedType = document.getElementById('route-type').value;
             const selectedYear = document.getElementById('route-year').value;
@@ -218,11 +219,20 @@
                     return typeMatch && yearMatch;
                 });
                 const isVisible = filteredSegments.length > 0;
-                group.polyline.setStyle({
-                    weight: 5 + Math.min(group.segments.length / 2, 10),
-                    opacity: isVisible ? 0.4 + Math.min(group.segments.length * 0.05, 0.6) : 0.1
-                });
-                if (isVisible) visibleCount += filteredSegments.length;
+                if (isVisible) {
+                    if (!map.hasLayer(group.polyline)) {
+                        group.polyline.addTo(map);
+                    }
+                    group.polyline.setStyle({
+                        weight: 5 + Math.min(group.segments.length / 2, 10),
+                        opacity: 0.4 + Math.min(group.segments.length * 0.05, 0.6)
+                    });
+                    visibleCount += filteredSegments.length;
+                } else {
+                    if (map.hasLayer(group.polyline)) {
+                        map.removeLayer(group.polyline);
+                    }
+                }
             });
 
             document.getElementById('route-count').textContent =
