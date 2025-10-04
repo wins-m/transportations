@@ -495,11 +495,13 @@
                     if (!map.hasLayer(group.polyline)) {
                         group.polyline.addTo(map);
                     }
+                    // 用筛选后数量决定 weight/opacity
+                    const segCount = filteredSegments.length;
                     group.polyline.setStyle({
-                        weight: 5 + Math.min(group.segments.length / 2, 10),
-                        opacity: 0.4 + Math.min(group.segments.length * 0.05, 0.6)
+                        weight: 5 + Math.min(segCount / 2, 10),
+                        opacity: 0.4 + Math.min(segCount * 0.05, 0.6)
                     });
-                    visibleCount += filteredSegments.length;
+                    visibleCount += segCount;
                 } else {
                     if (map.hasLayer(group.polyline)) {
                         map.removeLayer(group.polyline);
