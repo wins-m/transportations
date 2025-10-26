@@ -2312,5 +2312,57 @@
     "seat": 19,
     "price": 70,
     "note": NaN
+  },
+  {
+    "type": "Airline",
+    "date": "2025-12-23",
+    "from": "杭州萧山机场",
+    "to": "DXB 迪拜机场",
+    "vehicle": "EK311",
+    "time": "00:10-06:10",
+    "duration": "06:00:00",
+    "distance": "6348 km",
+    "seat": NaN,
+    "price": 7490,
+    "note": "西退4时"
+  },
+  {
+    "type": "Airline",
+    "date": "2025-12-23",
+    "from": "DXB 迪拜机场",
+    "to": "NCE 尼斯蔚蓝海岸机场",
+    "vehicle": "EK077",
+    "time": "08:20-12:35",
+    "duration": "04:15:00",
+    "distance": "4787 km",
+    "seat": NaN,
+    "price": "-",
+    "note": "西退3时"
+  },
+  {
+    "type": "Airline",
+    "date": "2026-01-02",
+    "from": "NCE 尼斯蔚蓝海岸机场",
+    "to": "DXB 迪拜机场",
+    "vehicle": "EK078",
+    "time": "14:30-23:35",
+    "duration": "09:05:00",
+    "distance": "4787 km",
+    "seat": NaN,
+    "price": "-",
+    "note": "东进3时"
+  },
+  {
+    "type": "Airline",
+    "date": "2026-01-03",
+    "from": "DXB 迪拜机场",
+    "to": "杭州萧山机场",
+    "vehicle": "EK310",
+    "time": "04:15-16:00",
+    "duration": "11:45:00",
+    "distance": "6348 km",
+    "seat": NaN,
+    "price": "-",
+    "note": "东进4时"
   }
 ]
