@@ -2314,6 +2314,32 @@
     "note": NaN
   },
   {
+    "type": "Other",
+    "date": "2025-11-12",
+    "from": "新城汽车客运站",
+    "to": "杭州东站汽车站",
+    "vehicle": "2037",
+    "time": "09:20-12:50",
+    "duration": "03:30:00",
+    "distance": "226 km",
+    "seat": 4,
+    "price": 110,
+    "note": "法签"
+  },
+  {
+    "type": "Other",
+    "date": "2025-11-12",
+    "from": "杭州东站汽车站",
+    "to": "新城汽车客运站",
+    "vehicle": "2094",
+    "time": "17:40-20:30",
+    "duration": "02:50:00",
+    "distance": "226 km",
+    "seat": 11,
+    "price": 110,
+    "note": NaN
+  },
+  {
     "type": "Airline",
     "date": "2025-12-23",
     "from": "杭州萧山机场",
