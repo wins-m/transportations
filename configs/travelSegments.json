@@ -2351,5 +2351,18 @@
     "seat": 1,
     "price": 110,
     "note": NaN
+  },
+  {
+    "type": "Other",
+    "date": "2026-05-03",
+    "from": "杭州东站汽车站",
+    "to": "新城汽车客运站",
+    "vehicle": "7022",
+    "time": "15:20-18:40",
+    "duration": "03:20:00",
+    "distance": "226 km",
+    "seat": 6,
+    "price": 110,
+    "note": NaN
   }
 ]
