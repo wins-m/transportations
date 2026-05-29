@@ -1,4 +1,4 @@
-#!venv/bin/python
+#!/usr/bin/env python3
 from argparse import ArgumentParser
 from convert import convert_coords_and_segments
 from update import update_map_html
@@ -26,5 +26,5 @@ if __name__ == "__main__":
     parser.add_argument('--tamp', type=str, default='./templates/map_heat16_ds.html',
                         help='Path to the template HTML file. (default: ./templates/map_heat16_ds.html)')
     parser.add_argument('--tgt', type=str, default='./incoming.html',
-                        help='Path to the target HTML file. (default: ./incomming.html)')
+                        help='Path to the target HTML file. (default: ./incoming.html)')
     main(args=parser.parse_args())

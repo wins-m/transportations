@@ -36,10 +36,9 @@ git commit -am "update <date>" && git push
 
 `incoming.html` is gitignored; `index.html` is the tracked, published output.
 
-There is no test suite, linter, or build config. Note that the scripts' shebang lines point at a
-local `venv`/homebrew Python — invoke them explicitly with `python3` (or an activated venv) rather
-than `./scripts/...`. The default `--src`, `--tamp`, etc. paths are relative to the **repo root**,
-so run from there.
+There is no test suite, linter, or build config. The scripts' shebangs are `#!/usr/bin/env python3`,
+but invoking them explicitly with `python3` (or an activated venv) is still recommended. The default
+`--src`, `--tamp`, etc. paths are relative to the **repo root**, so run from there.
 
 ## Pipeline architecture
 
@@ -63,14 +62,17 @@ so run from there.
   `duration` is derived by `calc.cal_duration`). Rows with `<= 4` populated fields are skipped.
 
 ### 2. `update_map_html` (`scripts/update.py`)
-- Parses the template HTML with BeautifulSoup, finds the `<script>` that defines both
-  `const locCoords` and `const travelSegments` (asserts both are present), and **regex-replaces
-  those two JS literal blocks** with the freshly generated JSON. Writes the result to
-  `incoming.html`. Default template is `templates/map_heat16_ds.html`.
+- Parses the template HTML with BeautifulSoup, locates the single `<script>` that defines both
+  `const locCoords` and `const travelSegments`, and **regex-replaces those two JS literal blocks**
+  with the freshly generated JSON. Writes the result to `incoming.html`. Default template is
+  `templates/map_heat16_ds.html`.
 
 **Key consequence:** any template you point `--tamp` at must already contain `const locCoords = {…};`
-and `const travelSegments = […];` for the replacement to work. The map's behavior/UI lives entirely
-in that template's JS — editing visuals means editing the template (or `index.html`), not the Python.
+and `const travelSegments = […];` (in one `<script>`) for the replacement to work. The map's
+behavior/UI lives entirely in that template's JS — editing visuals means editing the template (or
+`index.html`), not the Python. The default template renders route lines, station popups, a legend,
+a year/type filter, a travel-stats panel (bottom-left), and an optional heatmap toggle (the
+`leaflet.heat` plugin is loaded from a CDN and degrades gracefully if unavailable).
 
 ## Conventions & gotchas
 
@@ -85,6 +87,6 @@ in that template's JS — editing visuals means editing the template (or `index.
 - **`templates/map.html` is a legacy standalone prototype** with hardcoded coordinates and routes; it
   is not part of the pipeline. The `*_ds.html` templates are the real ones (richer variants:
   detail/heat/full), and `map_heat16_ds.html` is the current default that produced `index.html`.
-- **The README's CLI usage block is stale** — it predates the current `main.py` flags
-  (`--src/--tgt_coords/--tgt_segs/--tamp/--tgt`). Trust `python3 scripts/main.py --help`.
+- **`README.md` and `python3 scripts/main.py --help` are the authoritative CLI references** — both
+  cover the current `--src/--tgt_coords/--tgt_segs/--tamp/--tgt` flags.
 - Commits in this repo are dated snapshots (e.g. `update 20260508`); follow that style.

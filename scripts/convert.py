@@ -1,8 +1,5 @@
-#!venv/bin/python
-"""
-from *.xlsx generate loc & route configs
-
-"""
+#!/usr/bin/env python3
+"""Generate location & route configs from the trip spreadsheet (``*.xlsx``)."""
 import os
 import re
 import json
@@ -10,6 +7,17 @@ import yaml
 import pandas as pd
 from coords_search import get_coordinates
 from calc import cal_duration
+
+# Map the spreadsheet's 类型 (category) onto the three coordinate buckets used
+# everywhere downstream. Single source of truth — keep this the only copy.
+TRANS = {
+    '铁路': 'Railway',
+    '公路': 'Other',    # highway
+    '水路': 'Other',    # waterway
+    '飞机': 'Airline',
+    '自行车': 'Other',
+    '其他': 'Other',
+}
 
 
 def main():
@@ -25,15 +33,15 @@ def convert_coords_and_segments(src, tgt_coords, tgt_segs):
     if not os.path.exists(src):
         print(f"File {src} does not exist.")
         return
-    # Load the Excel file
+    # Load the Excel file. The last 4 rows are footer/summary rows, and the
+    # sheet is newest-first, so reverse it to get chronological order.
     df = pd.read_excel(src, header=0, sheet_name='Sheet1',
                        skipfooter=4).iloc[::-1]
 
-    # Preprocess spot oordinates
+    # Preprocess spot coordinates
     spots = {}
     for _, sr in df.iterrows():
-        left = cache_coords(sr=sr)
-        spots.update(left)
+        spots.update(cache_coords(sr=sr))
 
     # Generate string of locations
     tgt = filename_check(tgt_coords, 'json', fu=True)
@@ -45,7 +53,7 @@ def convert_coords_and_segments(src, tgt_coords, tgt_segs):
 
 
 def gen_loc_coords(dic, tgt):
-    print(f"Generate location coordinates to {tgt}.json")
+    print(f"Generate location coordinates to {tgt}.json ({len(dic)} locations)")
     json_dump(data=dic, tgt=tgt)
 
 
@@ -58,14 +66,6 @@ def filename_check(tgt, suf, fu=False):
 
 
 def gen_travel_segments(df, tgt):
-    TRANS = {
-        '铁路': 'Railway',
-        '公路': 'Other',  # 'highway',
-        '水路': 'Other',  # 'waterway',
-        '飞机': 'Airline',
-        '自行车': 'Other',
-        '其他': 'Other',
-    }
     print(f"Generate travel segments to {tgt}.json")
     res = []
     for _, a in df.iterrows():
@@ -73,7 +73,7 @@ def gen_travel_segments(df, tgt):
             continue
         kind = _decide_trans_kind(a['类型'])
         res.append({
-            'type': TRANS[a['类型']],
+            'type': kind,
             'date': a['日期'].strftime('%Y-%m-%d') if a['日期'] is not None else '-',
             'from': _mod2(_mod1(a['乘坐区间'].split('-')[0], kind, a['始发站']), kind=kind),
             'to': _mod2(_mod1(a['乘坐区间'].split('-')[-1], kind, a['终到站']), kind=kind),
@@ -85,6 +85,7 @@ def gen_travel_segments(df, tgt):
             'price': a['票价'],
             'note': a['备注'] if a['备注'] is not None else '',
         })
+    print(f"  -> {len(res)} segments")
     json_dump(data=res, tgt=tgt)
 
 
@@ -92,30 +93,19 @@ def json_dump(data, tgt):
     # Save the JSON string to the file
     with open(tgt + '.json', 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
-    # print(f"JSON saved to {tgt}.json")
 
 
 def _decide_trans_kind(kind):
-    TRANS = {
-        '铁路': 'Railway',
-        '公路': 'Other',  # 'highway',
-        '水路': 'Other',  # 'waterway',
-        '飞机': 'Airline',
-        '自行车': 'Other',
-        '其他': 'Other',
-    }
-    if kind in TRANS:
-        kind = TRANS[kind]
-    else:
+    if kind not in TRANS:
         raise ValueError(f"Unknown transportation type: {kind}")
-    return kind
+    return TRANS[kind]
 
 
 def _mod2(x, kind=None):
     if kind == 'Airline':
         return x.split('T')[0]
     else:
-        return x#.replace('机场', '').replace('航站楼', '')
+        return x  # .replace('机场', '').replace('航站楼', '')
 
 
 def _mod1(x, kind, ref):
@@ -140,49 +130,42 @@ def _mod1(x, kind, ref):
                 x = ref
             if x[-2:] != '机场':
                 x += '机场'
-    elif kind == 'waterway':
-        pass
-        # x = x.replace('港', '')
-    elif kind == 'highway':
-        if bool(re.search(r'[a-zA-Z]', x)):
-            pass
-        elif x[-5:] != '汽车客运站':
-            x = x + '汽车客运站'
     elif kind != 'Other':
         raise ValueError(f"Unknown transportation type: {kind}")
     return x
 
 
-def __coords_correction(head, kind, ref):
-    res = {}
-    for x in head:
-        res[_mod1(x, kind, ref)] = head[x]
-    head = res
+# Cached Amap API key — loaded once, lazily, on the first geocode miss.
+_API_KEY = None
 
 
 def cache_coords(sr: pd.Series) -> dict:
     """generate coordinates of start and end locations"""
+
+    global _API_KEY
 
     kind = _decide_trans_kind(sr['类型'])
     src_coords = f'./configs/coords/{kind.lower()}.yaml'
 
     # Load the existing coordinates from the YAML file
     if os.path.exists(src_coords):
-        head = yaml.safe_load(open(src_coords, 'r', encoding='utf-8'))
+        with open(src_coords, 'r', encoding='utf-8') as f:
+            head = yaml.safe_load(f) or {}
     else:
         head = {}
 
     # Check if the coordinates for the locations already exist
     chg_flag = 0
-    # Rusult locations
+    # Result locations
     locs = {}
     for x0, ref in zip(sr['乘坐区间'].split('-'), [sr['始发站'], sr['终到站']]):
         _ = _mod1(x0, kind, ref)
         x2 = _mod2(_, kind=kind)
 
         if x2 not in head:
-            API_KEY = load_api_keys()
-            res = get_coordinates(x2, API_KEY)
+            if _API_KEY is None:
+                _API_KEY = load_api_keys()
+            res = get_coordinates(x2, _API_KEY)
             if res is None:
                 print(f"Coordinates for {x2} not found.")
                 continue
@@ -203,8 +186,17 @@ def cache_coords(sr: pd.Series) -> dict:
 
 
 def load_api_keys(src='./scripts/configs.yaml'):
-    with open(src, 'r') as f:
-        conf = yaml.safe_load(f)
+    if not os.path.exists(src):
+        raise FileNotFoundError(
+            f"Amap API key file '{src}' not found. A new (uncached) location "
+            f"needs geocoding, which requires this file. Create it with:\n"
+            f"    amap_api: <your-amap-api-key>\n"
+            f"(It is gitignored.) If every place is already cached in "
+            f"configs/coords/*.yaml, no key is needed.")
+    with open(src, 'r', encoding='utf-8') as f:
+        conf = yaml.safe_load(f) or {}
+    if 'amap_api' not in conf:
+        raise KeyError(f"'amap_api' key missing from '{src}'.")
     return conf['amap_api']
 
 

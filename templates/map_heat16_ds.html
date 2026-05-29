@@ -3,13 +3,22 @@
 
 <head>
     <meta charset="utf-8" />
-    <title>Transportation Records</title>
+    <title>旅行交通记录地图</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="个人旅行交通记录的交互式地图：铁路、航空与其他线路、站点弹窗、年份/类型筛选与统计。" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <!-- Optional heatmap plugin; the map degrades gracefully if it fails to load. -->
+    <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+                "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
         }
 
         #map {
@@ -17,23 +26,47 @@
             width: 100vw;
         }
 
-        .legend {
-            padding: 10px;
+        .legend,
+        .control-panel,
+        .stats-panel {
             background: white;
+            padding: 10px;
             border-radius: 5px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            font-size: 14px;
+            line-height: 1.4;
         }
 
         .control-panel {
-            background: white;
-            padding: 10px;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            width: 170px;
+            max-width: 45vw;
+        }
+
+        .stats-panel {
+            min-width: 150px;
+        }
+
+        .stats-panel .num {
+            font-weight: 600;
         }
 
         .route-popup {
             max-height: 300px;
             overflow-y: auto;
+        }
+
+        @media (max-width: 600px) {
+
+            .legend,
+            .control-panel,
+            .stats-panel {
+                font-size: 12px;
+                padding: 7px;
+            }
+
+            .control-panel {
+                width: 130px;
+            }
         }
     </style>
 </head>
@@ -159,10 +192,15 @@
                                 <option value="all">所有年份</option>
                                 ${years.map(y => `<option value="${y}">${y}年</option>`).join('')}
                             </select>
+                            <label style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+                                <input type="checkbox" id="toggle-heat"> 热力图
+                            </label>
                             <div id="route-count" style="margin-top:5px;font-size:0.8em">
                                 共 ${travelSegments.length} 次行程
                             </div>
                         `;
+            // Stop map drag/zoom when interacting with the panel.
+            L.DomEvent.disableClickPropagation(div);
             return div;
         };
         controlPanel.addTo(map);
@@ -183,13 +221,13 @@
             // 合并弹窗内容
             const popupContent = `
                 <div class="route-popup">
-                  <b>${group.segments[0].from} -️ ${group.segments[0].to}</b>
+                  <b>${group.segments[0].from} → ${group.segments[0].to}</b>
                   <small>（${group.segments[0].distance}, 共 ${group.segments.length} 次行程）</small>
                   <hr>
                   ${group.segments.map(trip => `
                     <div style="margin-bottom:8px;padding-bottom:5px;border-bottom:1px dashed #eee">
                       <div style="display:flex;justify-content:space-between">
-                        <span>${trip.from === group.segments[0].from ? '➡️' : '⬅️'}️ ${trip.date}</span>
+                        <span>${trip.from === group.segments[0].from ? '➡️' : '⬅️'} ${trip.date}</span>
                         <span style="color:${typeColors[trip.type]}">${trip.type === 'Railway' ? '🚄' : trip.type === 'Airline' ? '✈️' : '🚌'} ${trip.vehicle}</span>
                       </div>
                       <div style="display:flex;justify-content:space-between">
@@ -232,13 +270,13 @@
                     // 更新弹窗内容为筛选后的行程
                     const popupContent = `
                         <div class="route-popup">
-                          <b>${group.segments[0].from} -️ ${group.segments[0].to}</b>
+                          <b>${group.segments[0].from} → ${group.segments[0].to}</b>
                           <small>（${filteredSegments[0]?.distance || ''}, 共 ${segCount} 次行程）</small>
                           <hr>
                           ${filteredSegments.map(trip => `
                             <div style="margin-bottom:8px;padding-bottom:5px;border-bottom:1px dashed #eee">
                               <div style="display:flex;justify-content:space-between">
-                                <span>${trip.from === group.segments[0].from ? '➡️' : '⬅️'}️ ${trip.date}</span>
+                                <span>${trip.from === group.segments[0].from ? '➡️' : '⬅️'} ${trip.date}</span>
                                 <span style="color:${typeColors[trip.type]}">${trip.type === 'Railway' ? '🚄' : trip.type === 'Airline' ? '✈️' : '🚌'} ${trip.vehicle}</span>
                               </div>
                               <div style="display:flex;justify-content:space-between">
@@ -340,6 +378,59 @@
                 .addTo(map)
                 .bindPopup(popup);
         });
+
+        // ========= 统计面板 =========
+        // 把 "1662 km" / "10:09:00" 解析为数值，汇总里程与时长。
+        function parseDistanceKm(s) {
+            const m = /([\d.]+)/.exec(s || '');
+            return m ? parseFloat(m[1]) : 0;
+        }
+        function parseDurationHours(s) {
+            const m = /^(\d+):(\d+):/.exec(s || '');
+            return m ? parseInt(m[1], 10) + parseInt(m[2], 10) / 60 : 0;
+        }
+
+        const stats = { Railway: 0, Airline: 0, Other: 0 };
+        let totalKm = 0, totalHours = 0;
+        travelSegments.forEach(seg => {
+            stats[seg.type] = (stats[seg.type] || 0) + 1;
+            totalKm += parseDistanceKm(seg.distance);
+            totalHours += parseDurationHours(seg.duration);
+        });
+
+        const statsPanel = L.control({ position: 'bottomleft' });
+        statsPanel.onAdd = () => {
+            const div = L.DomUtil.create('div', 'stats-panel');
+            div.innerHTML = `
+              <h4 style="margin:4px 0">出行统计</h4>
+              <div>总行程 <span class="num">${travelSegments.length}</span> 次</div>
+              <div>🚄 ${stats.Railway} · ✈️ ${stats.Airline} · 🚌 ${stats.Other}</div>
+              <div>总里程 <span class="num">${totalKm.toLocaleString('en-US', { maximumFractionDigits: 0 })}</span> km</div>
+              <div>总时长 <span class="num">${totalHours.toFixed(0)}</span> 小时</div>
+              <div>途经 <span class="num">${Object.keys(locCoords).length}</span> 个站点</div>
+            `;
+            return div;
+        };
+        statsPanel.addTo(map);
+
+        // ========= 热力图层（可选，插件缺失时静默跳过）=========
+        let heatLayer = null;
+        const heatToggle = document.getElementById('toggle-heat');
+        if (heatToggle && typeof L.heatLayer === 'function') {
+            const heatPoints = Object.values(locCoords).map(c => [c[0], c[1], 0.6]);
+            heatLayer = L.heatLayer(heatPoints, { radius: 25, blur: 18, maxZoom: 8 });
+            heatToggle.addEventListener('change', e => {
+                if (e.target.checked) {
+                    heatLayer.addTo(map);
+                } else {
+                    map.removeLayer(heatLayer);
+                }
+            });
+        } else if (heatToggle) {
+            // 插件未加载：禁用复选框，避免误导。
+            heatToggle.disabled = true;
+            heatToggle.parentElement.style.opacity = 0.5;
+        }
 
         // 自动缩放
         var markers = [];
