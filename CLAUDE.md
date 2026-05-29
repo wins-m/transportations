@@ -5,29 +5,26 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## What this is
 
 A personal travel-history visualizer. A spreadsheet of trips (`data/transport_record.xlsx`)
-is processed into JSON config and rendered onto an interactive Leaflet map. The committed
-`index.html` is the published artifact (a self-contained map served e.g. via GitHub Pages).
+is geocoded and transformed into JSON, then injected into a Leaflet map template. The committed
+`index.html` is the published artifact — a self-contained interactive map (route lines, popups,
+legend/control panel, grouping by year & type, heatmap layers).
 
-The source spreadsheet and all place names use **Chinese column headers and labels**. Key
-columns in the record: `出发地` (from), `到达地` (to), `日期` (date), `方式` (transport type),
-`备注` (note).
+The source spreadsheet and all place names are in **Chinese**. The relevant `Sheet1` columns are:
+`类型` (category), `乘坐区间` (segment as `"start-end"`), `始发站`/`终到站` (origin/terminal station),
+`日期` (date), `车次` (vehicle no.), `时间` (time range), `区间里程` (distance), `座位号` (seat),
+`票价` (price), `备注` (note).
 
 ## Commands
 
-All scripts assume they are run **from the repo root** — default paths are relative (`./data/...`,
-`./configs/...`). `scripts/` has no package entry beyond an empty `__init__.py`; the scripts
-import each other by bare module name, so run them from inside `scripts/` OR rely on the default
-invocation below.
-
 ```sh
-pip install -r scripts/requirements.txt   # pandas, openpyxl, pyyaml
+pip install -r scripts/requirements.txt   # pandas, numpy, openpyxl, PyYAML, requests, beautifulsoup4
 
-# Full pipeline: xlsx -> configs JSON -> incoming.html
-./scripts/main.py                          # uses defaults; see flags with --help
+# Full pipeline: xlsx -> configs JSON -> incoming.html (defaults shown in main.py --help)
+python3 scripts/main.py
 
-# Helpers (standalone, run from repo root)
-python3 scripts/calc.py                    # total trip distance (haversine over segments)
-python3 scripts/coords_search.py <place>   # look up [lat, lon] via OSM Nominatim
+# Helpers (standalone)
+python3 scripts/calc.py                          # uses cal_duration() over the spreadsheet
+python3 scripts/coords_search.py                 # one-off Amap geocode lookup (edit keyword in file)
 ```
 
 After running `main.py`, review the generated `./incoming.html`, then publish:
@@ -37,45 +34,57 @@ mv incoming.html index.html
 git commit -am "update <date>" && git push
 ```
 
-`incoming.html` is gitignored; `index.html` is the tracked output.
+`incoming.html` is gitignored; `index.html` is the tracked, published output.
 
-There is no test suite, linter, or build config in this repo.
+There is no test suite, linter, or build config. Note that the scripts' shebang lines point at a
+local `venv`/homebrew Python — invoke them explicitly with `python3` (or an activated venv) rather
+than `./scripts/...`. The default `--src`, `--tamp`, etc. paths are relative to the **repo root**,
+so run from there.
 
 ## Pipeline architecture
 
-`scripts/main.py` orchestrates four steps (see `convert.py` and `update.py`):
+`scripts/main.py` runs two stages in order:
 
-1. **`load_transport_record(src)`** — reads the Excel file into a pandas DataFrame, stripping
-   column names.
-2. **`generate_location_coordinates(records, tgt_coords)`** — collects every unique place from
-   `出发地`/`到达地` and merges them into `configs/locCoords.json`. This file is **append-only /
-   preserved across runs**: existing coordinates are kept, and any new place is added with a
-   `[null, null]` placeholder. The function prints which places still need coordinates.
-3. **`generate_travel_segments(records, tgt_segs)`** — rewrites `configs/travelSegments.json` as a
-   flat list of `{from, to, date, type, note}` objects (one per spreadsheet row).
-4. **`update_html(...)`** — loads both JSON files, **drops any location whose coordinate is null**,
-   then injects the data into the template by string-replacing the `/*LOC_COORDS*/` and
-   `/*TRAVEL_SEGMENTS*/` placeholders in `templates/map.html`. The rendered file is written to
-   `incoming.html`.
+### 1. `convert_coords_and_segments` (`scripts/convert.py`)
+- Reads the Excel via `pd.read_excel(..., sheet_name='Sheet1', skipfooter=4).iloc[::-1]` — the last
+  4 rows are dropped and **row order is reversed** (spreadsheet is newest-first; output is
+  chronological).
+- For each row, `cache_coords()` geocodes the origin/terminal. `_decide_trans_kind` maps `类型`
+  into one of three buckets — `Railway` (铁路), `Airline` (飞机), `Other` (公路/水路/自行车/其他) —
+  and coordinates are cached per-bucket in **`configs/coords/{railway,airline,other}.yaml`**. A
+  location absent from its YAML cache is looked up via the **Amap (高德) geocoding REST API**
+  (`scripts/coords_search.py::get_coordinates`) and written back to the YAML. Locations the API
+  can't resolve are printed and skipped.
+- `_mod1`/`_mod2` normalize raw place strings into Amap-friendly keywords (appending `站` / `机场` /
+  `航站楼`, handling airport `T<n>` terminals, English `Station` suffixes). The normalized name
+  becomes the key used everywhere downstream, so route endpoints must match `locCoords` keys exactly.
+- Outputs: `configs/locCoords.json` (name → `[lat, lon]`) and `configs/travelSegments.json` (one
+  object per trip: `type/date/from/to/vehicle/time/duration/distance/seat/price/note`, where
+  `duration` is derived by `calc.cal_duration`). Rows with `<= 4` populated fields are skipped.
 
-The critical consequence: **a trip will silently not render until its endpoints have real
-coordinates in `locCoords.json`.** The normal loop is: run `main.py`, read the "needs coordinates"
-output, fill the `[null, null]` entries (manually or with `coords_search.py`), and re-run.
+### 2. `update_map_html` (`scripts/update.py`)
+- Parses the template HTML with BeautifulSoup, finds the `<script>` that defines both
+  `const locCoords` and `const travelSegments` (asserts both are present), and **regex-replaces
+  those two JS literal blocks** with the freshly generated JSON. Writes the result to
+  `incoming.html`. Default template is `templates/map_heat16_ds.html`.
+
+**Key consequence:** any template you point `--tamp` at must already contain `const locCoords = {…};`
+and `const travelSegments = […];` for the replacement to work. The map's behavior/UI lives entirely
+in that template's JS — editing visuals means editing the template (or `index.html`), not the Python.
 
 ## Conventions & gotchas
 
-- **Template injection is comment-placeholder based.** Any template used with `update.py` must
-  contain the literal tokens `/*LOC_COORDS*/` and `/*TRAVEL_SEGMENTS*/`. `templates/map.html` is
-  the default minimal template. The other `templates/*_ds.html` files are richer variants
-  (control panel, group-by-year/type, popups, heatmaps) used to produce the current `index.html`;
-  switch templates with `--tamp`.
-- **`configs/coords/*.yaml` are NOT part of the pipeline.** They are manually maintained reference
-  coordinate banks grouped by transport category (`铁路` railway, `airline`, `other`). No script
-  imports `yaml` — `pyyaml` in requirements is currently unused by code. Treat these as a lookup
-  resource, not pipeline input.
-- **Data hygiene matters in `方式` (type) values.** The source data contains inconsistencies such as
-  trailing spaces (`"飞机 "`) and synonyms (`驾车` vs `自驾`). Anything that groups or colors by type
-  should normalize these.
-- **Known bug:** `scripts/main.py` declares the `--tgt` argument (and `parser.parse_args()`) twice,
-  which makes argparse raise `ArgumentError` and the script fails on launch. Fix the duplicate
-  before relying on `main.py`.
+- **Amap API key required for new locations.** `cache_coords` reads `conf['amap_api']` from
+  `./scripts/configs.yaml`, which is **gitignored** (`**/configs.yaml`) and not in the repo. Geocoding
+  (and therefore a clean `main.py` run that encounters an uncached place) needs this file. If every
+  place is already in the `configs/coords/*.yaml` caches, no API call — and no key — is needed.
+- **Two coordinate stores, different roles.** `configs/coords/*.yaml` are the per-category geocode
+  caches (the source of truth, append-only via the API). `configs/locCoords.json` is the regenerated,
+  flattened map of every place used in the current dataset. Don't hand-edit `locCoords.json`; fix the
+  YAML cache or the spreadsheet.
+- **`templates/map.html` is a legacy standalone prototype** with hardcoded coordinates and routes; it
+  is not part of the pipeline. The `*_ds.html` templates are the real ones (richer variants:
+  detail/heat/full), and `map_heat16_ds.html` is the current default that produced `index.html`.
+- **The README's CLI usage block is stale** — it predates the current `main.py` flags
+  (`--src/--tgt_coords/--tgt_segs/--tamp/--tgt`). Trust `python3 scripts/main.py --help`.
+- Commits in this repo are dated snapshots (e.g. `update 20260508`); follow that style.
