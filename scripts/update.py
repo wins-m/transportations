@@ -1,4 +1,4 @@
-#!venv/bin/python
+#!/usr/bin/env python3
 from bs4 import BeautifulSoup
 import json
 import re
@@ -27,20 +27,26 @@ def update_map_html(coords, segs, tamp, tgt):
     with open(tamp, "r", encoding="utf-8") as html_file:
         soup = BeautifulSoup(html_file, "html.parser")
 
-    # Find the <script> with 'const locCoords'
-    for body in soup.find_all('body'):
-        for script in body.find_all("script"):
-            assert script.string and "const locCoords" in script.string
-            assert script.string and "const travelSegments" in script.string
+    # Find the one <script> that defines both data literals.
+    target = None
+    for script in soup.find_all("script"):
+        if script.string and "const locCoords" in script.string \
+                and "const travelSegments" in script.string:
+            target = script
+            break
+    if target is None:
+        raise ValueError(
+            f"No <script> in '{tamp}' defines both 'const locCoords' and "
+            f"'const travelSegments'; cannot inject data.")
 
-            # Pattern to match full multi-line JS const block
-            for pattern, js_replacement in zip([r"const\s+locCoords\s*=\s*\{.*?\};",
-                                                r"const\s+travelSegments\s*=\s*\[.*?\];"],
-                                               [f"const locCoords = {loc_js};".replace("], ", "],\n\t\t\t"),
-                                                f"const travelSegments = {seg_js};".replace("{'type'", "\n\t\t\t{'type'").replace('nan', "'-'")]):
-                pattern = re.compile(pattern, re.DOTALL)
-                # Replace the JS variable with updated JSON
-                script.string = pattern.sub(js_replacement, script.string)
+    # Pattern to match full multi-line JS const block
+    for pattern, js_replacement in zip([r"const\s+locCoords\s*=\s*\{.*?\};",
+                                        r"const\s+travelSegments\s*=\s*\[.*?\];"],
+                                       [f"const locCoords = {loc_js};".replace("], ", "],\n\t\t\t"),
+                                        f"const travelSegments = {seg_js};".replace("{'type'", "\n\t\t\t{'type'").replace('nan', "'-'")]):
+        pattern = re.compile(pattern, re.DOTALL)
+        # Replace the JS variable with updated JSON
+        target.string = pattern.sub(js_replacement, target.string)
 
     # Save modified HTML
     with open(tgt, "w", encoding="utf-8") as out_file:
