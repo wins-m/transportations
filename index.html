@@ -475,7 +475,7 @@
                                 ${years.map(y => `<option value="${y}">${y}年</option>`).join('')}
                             </select>
                             <label style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
-                                <input type="checkbox" id="toggle-heat"> 热力图
+                                <input type="checkbox" id="toggle-heat" checked> 热力图
                             </label>
                             <div id="route-count" style="margin-top:5px;font-size:0.8em">
                                 共 ${travelSegments.length} 次行程
@@ -530,6 +530,8 @@
             const selectedType = document.getElementById('route-type').value;
             const selectedYear = document.getElementById('route-year').value;
             let visibleCount = 0;
+            // 收集当前可见路线两端的站点，供图钉联动使用
+            const visibleStations = new Set();
 
             Object.values(routeGroups).forEach(group => {
                 // 判断该组内是否有符合条件的行程
@@ -570,11 +572,22 @@
                         </div>
                       `;
                     group.polyline.bindPopup(popupContent);
+                    visibleStations.add(group.segments[0].from);
+                    visibleStations.add(group.segments[0].to);
                     visibleCount += segCount;
                 } else {
                     if (map.hasLayer(group.polyline)) {
                         map.removeLayer(group.polyline);
                     }
+                }
+            });
+
+            // 站点图钉随筛选联动：只显示当前可见路线两端的站点
+            Object.entries(stationMarkers).forEach(([name, marker]) => {
+                if (visibleStations.has(name)) {
+                    if (!map.hasLayer(marker)) marker.addTo(map);
+                } else {
+                    if (map.hasLayer(marker)) map.removeLayer(marker);
                 }
             });
 
@@ -631,6 +644,8 @@
             }
         });
 
+        // 图钉按站点名缓存，可见性由筛选器控制（见 updateRouteFilter）
+        const stationMarkers = {};
         Object.entries(locCoords).forEach(([name, coords]) => {
             let popup = `<b>${name}</b><br>坐标: ${coords[0].toFixed(4)}, ${coords[1].toFixed(4)}`;
             const arrive = cityFirstArrive[name];
@@ -656,10 +671,13 @@
                 const dateStr = `${d[0]}.${parseInt(d[1],10)}.${parseInt(d[2],10)}`;
                 popup += `<br>${showType}: <b>${dateStr}</b>`;
             }
-            L.marker(coords, { icon: smallIcon })
+            stationMarkers[name] = L.marker(coords, { icon: smallIcon })
                 .addTo(map)
                 .bindPopup(popup);
         });
+
+        // 初始化图钉可见性，使其与（默认全选的）筛选器保持一致
+        updateRouteFilter();
 
         // ========= 统计面板 =========
         // 把 "1662 km" / "10:09:00" 解析为数值，汇总里程与时长。
@@ -701,6 +719,10 @@
         if (heatToggle && typeof L.heatLayer === 'function') {
             const heatPoints = Object.values(locCoords).map(c => [c[0], c[1], 0.6]);
             heatLayer = L.heatLayer(heatPoints, { radius: 25, blur: 18, maxZoom: 8 });
+            // 默认打开热力图，与复选框的 checked 状态一致
+            if (heatToggle.checked) {
+                heatLayer.addTo(map);
+            }
             heatToggle.addEventListener('change', e => {
                 if (e.target.checked) {
                     heatLayer.addTo(map);
