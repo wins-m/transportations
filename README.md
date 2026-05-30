@@ -66,9 +66,9 @@ git commit -am "update $(date +%Y%m%d)" && git push
 - `configs/coords/{railway,airline,other}.yaml` — append-only geocode caches
   (source of truth). `configs/locCoords.json` + `configs/travelSegments.json`
   are the regenerated datasets — don't hand-edit them.
-- `templates/*_ds.html` — map templates; `map_heat16_ds.html` is the default.
-  `templates/map.html` is a legacy standalone prototype, not part of the
-  pipeline.
+- `templates/map_heat16_ds.html` — the live (default) map template. Older
+  variants and the legacy `map.html` prototype are archived under
+  `templates/archive/` and are not part of the pipeline.
 - `index.html` — the published, self-contained map.
 
 See `CLAUDE.md` for the detailed pipeline architecture and gotchas.

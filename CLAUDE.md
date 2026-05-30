@@ -84,9 +84,11 @@ a year/type filter, a travel-stats panel (bottom-left), and an optional heatmap 
   caches (the source of truth, append-only via the API). `configs/locCoords.json` is the regenerated,
   flattened map of every place used in the current dataset. Don't hand-edit `locCoords.json`; fix the
   YAML cache or the spreadsheet.
-- **`templates/map.html` is a legacy standalone prototype** with hardcoded coordinates and routes; it
-  is not part of the pipeline. The `*_ds.html` templates are the real ones (richer variants:
-  detail/heat/full), and `map_heat16_ds.html` is the current default that produced `index.html`.
+- **`templates/map_heat16_ds.html` is the only live template** — the current default that produced
+  `index.html`. All other variants (the earlier `map_heat{12,13,15}_ds.html`, `map_ds.html`,
+  `map_detail_ds.html`, `fullmap_ds.html`, `map_with_arrows.html`, and the legacy standalone
+  `map.html` prototype with hardcoded coords) are **archived under `templates/archive/`** and are not
+  part of the pipeline. Point `--tamp` at one only if reviving it.
 - **`README.md` and `python3 scripts/main.py --help` are the authoritative CLI references** — both
   cover the current `--src/--tgt_coords/--tgt_segs/--tamp/--tgt` flags.
 - Commits in this repo are dated snapshots (e.g. `update 20260508`); follow that style.

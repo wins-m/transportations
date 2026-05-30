@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <title>旅行交通记录地图</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="description" content="个人旅行交通记录的交互式地图：铁路、航空与其他线路、站点弹窗、年份/类型筛选与统计。" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -23,6 +23,7 @@
 
         #map {
             height: 100vh;
+            height: 100dvh; /* 移动端按可见视口计算，避免浏览器底栏遮挡地图底部控件 */
             width: 100vw;
         }
 
@@ -66,6 +67,31 @@
 
             .control-panel {
                 width: 130px;
+            }
+
+            /* 底部控件避开手机底栏/手势条与刘海安全区 */
+            .leaflet-bottom {
+                bottom: env(safe-area-inset-bottom, 0px);
+            }
+
+            .leaflet-left {
+                left: env(safe-area-inset-left, 0px);
+            }
+
+            .leaflet-right {
+                right: env(safe-area-inset-right, 0px);
+            }
+
+            /* 左右两块底部面板限制高宽并可滚动，避免越界或互相重叠 */
+            .legend,
+            .stats-panel {
+                max-width: 44vw;
+                max-height: 40vh;
+                overflow-y: auto;
+            }
+
+            .stats-panel {
+                min-width: 0;
             }
         }
     </style>
