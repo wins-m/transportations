@@ -250,6 +250,8 @@
             let visibleCount = 0;
             // 收集当前可见路线两端的站点，供图钉联动使用
             const visibleStations = new Set();
+            // 收集当前筛选命中的行程，供统计面板联动使用
+            const visibleSegments = [];
 
             Object.values(routeGroups).forEach(group => {
                 // 判断该组内是否有符合条件的行程
@@ -293,6 +295,7 @@
                     visibleStations.add(group.segments[0].from);
                     visibleStations.add(group.segments[0].to);
                     visibleCount += segCount;
+                    filteredSegments.forEach(seg => visibleSegments.push(seg));
                 } else {
                     if (map.hasLayer(group.polyline)) {
                         map.removeLayer(group.polyline);
@@ -311,6 +314,9 @@
 
             document.getElementById('route-count').textContent =
                 `显示 ${visibleCount}/${travelSegments.length} 次行程`;
+
+            // 统计面板随筛选联动
+            updateStats(visibleSegments, visibleStations);
         }
 
         document.getElementById('route-type').addEventListener('change', updateRouteFilter);
@@ -394,8 +400,7 @@
                 .bindPopup(popup);
         });
 
-        // 初始化图钉可见性，使其与（默认全选的）筛选器保持一致
-        updateRouteFilter();
+        // 图钉默认全部加入地图；初始可见性与统计在统计面板就绪后由 updateRouteFilter 统一同步
 
         // ========= 统计面板 =========
         // 把 "1662 km" / "10:09:00" 解析为数值，汇总里程与时长。
@@ -408,28 +413,38 @@
             return m ? parseInt(m[1], 10) + parseInt(m[2], 10) / 60 : 0;
         }
 
-        const stats = { Railway: 0, Airline: 0, Other: 0 };
-        let totalKm = 0, totalHours = 0;
-        travelSegments.forEach(seg => {
-            stats[seg.type] = (stats[seg.type] || 0) + 1;
-            totalKm += parseDistanceKm(seg.distance);
-            totalHours += parseDurationHours(seg.duration);
-        });
-
         const statsPanel = L.control({ position: 'bottomleft' });
         statsPanel.onAdd = () => {
             const div = L.DomUtil.create('div', 'stats-panel');
-            div.innerHTML = `
-              <h4 style="margin:4px 0">出行统计</h4>
-              <div>总行程 <span class="num">${travelSegments.length}</span> 次</div>
-              <div>🚄 ${stats.Railway} · ✈️ ${stats.Airline} · 🚌 ${stats.Other}</div>
-              <div>总里程 <span class="num">${totalKm.toLocaleString('en-US', { maximumFractionDigits: 0 })}</span> km</div>
-              <div>总时长 <span class="num">${totalHours.toFixed(0)}</span> 小时</div>
-              <div>途经 <span class="num">${Object.keys(locCoords).length}</span> 个站点</div>
-            `;
+            div.id = 'stats-panel';
             return div;
         };
         statsPanel.addTo(map);
+
+        // 依据当前筛选结果刷新统计面板（行程数 / 各类型 / 里程 / 时长 / 站点数）
+        function updateStats(segments, stations) {
+            const panel = document.getElementById('stats-panel');
+            if (!panel) return;
+            const byType = { Railway: 0, Airline: 0, Other: 0 };
+            let totalKm = 0, totalHours = 0;
+            segments.forEach(seg => {
+                byType[seg.type] = (byType[seg.type] || 0) + 1;
+                totalKm += parseDistanceKm(seg.distance);
+                totalHours += parseDurationHours(seg.duration);
+            });
+            const stationCount = stations ? stations.size : 0;
+            panel.innerHTML = `
+              <h4 style="margin:4px 0">出行统计</h4>
+              <div>总行程 <span class="num">${segments.length}</span> 次</div>
+              <div>🚄 ${byType.Railway} · ✈️ ${byType.Airline} · 🚌 ${byType.Other}</div>
+              <div>总里程 <span class="num">${totalKm.toLocaleString('en-US', { maximumFractionDigits: 0 })}</span> km</div>
+              <div>总时长 <span class="num">${totalHours.toFixed(0)}</span> 小时</div>
+              <div>途经 <span class="num">${stationCount}</span> 个站点</div>
+            `;
+        }
+
+        // 统计面板就绪后再做一次初始筛选，使三块面板（控件/图钉/统计）状态一致
+        updateRouteFilter();
 
         // ========= 热力图层（可选，插件缺失时静默跳过）=========
         let heatLayer = null;
