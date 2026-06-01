@@ -484,6 +484,9 @@
         // ========= 方案5：交互式筛选控件 =========
         // 获取所有年份，去重排序
         const years = Array.from(new Set(travelSegments.map(seg => seg.date.slice(0, 4)))).sort();
+        // 首页默认显示当前年份（数据中无当前年份行程时回退为「所有年份」）
+        const currentYear = String(new Date().getFullYear());
+        const defaultYear = years.includes(currentYear) ? currentYear : 'all';
 
         const controlPanel = L.control({ position: 'topright' });
         controlPanel.onAdd = () => {
@@ -497,8 +500,8 @@
                                 <option value="Other">其他</option>
                             </select>
                             <select id="route-year" style="width:100%;margin-bottom:6px">
-                                <option value="all">所有年份</option>
-                                ${years.map(y => `<option value="${y}">${y}年</option>`).join('')}
+                                <option value="all" ${defaultYear === 'all' ? 'selected' : ''}>所有年份</option>
+                                ${years.map(y => `<option value="${y}" ${y === defaultYear ? 'selected' : ''}>${y}年</option>`).join('')}
                             </select>
                             <label style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
                                 <input type="checkbox" id="toggle-heat" checked> 热力图
