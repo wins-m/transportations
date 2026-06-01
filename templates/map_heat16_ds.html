@@ -346,6 +346,15 @@
 
             // 统计面板随筛选联动
             updateStats(visibleSegments, visibleStations);
+
+            // 视图随筛选联动：仅以当前筛选命中的站点为中心自动缩放
+            const visibleLatLngs = [];
+            visibleStations.forEach(name => {
+                if (locCoords[name]) visibleLatLngs.push(L.latLng(locCoords[name]));
+            });
+            if (visibleLatLngs.length > 0) {
+                map.fitBounds(L.latLngBounds(visibleLatLngs), { padding: [50, 50], maxZoom: 9 });
+            }
         }
 
         document.getElementById('route-type').addEventListener('change', updateRouteFilter);
@@ -498,14 +507,10 @@
             heatToggle.parentElement.style.opacity = 0.5;
         }
 
-        // 自动缩放
-        var markers = [];
-        Object.keys(locCoords).forEach(function (city) {
-            markers.push(L.latLng(locCoords[city]));
-        });
-        map.fitBounds(L.latLngBounds(markers), { padding: [50, 50] });
+        // 初始视图由 updateRouteFilter() 根据当前筛选（默认当前年份）的命中记录自动缩放，
+        // 故此处不再对全部站点做一次性 fitBounds。
 
-    </script>
+</script>
 </body>
 
 </html>
