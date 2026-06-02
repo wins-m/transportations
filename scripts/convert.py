@@ -3,6 +3,7 @@
 import os
 import re
 import json
+import math
 import yaml
 import pandas as pd
 from coords_search import get_coordinates, get_coordinates_osm
@@ -196,15 +197,56 @@ def cache_coords(sr: pd.Series) -> dict:
     return locs
 
 
+# Amap doesn't return an empty result for a foreign keyword it can't place — it
+# silently returns a point in Beijing. So a bare ``is None`` check can't tell a
+# miss from a hit. We treat any Amap answer inside the Beijing municipality box
+# as unverified and cross-check it against OpenStreetMap: if OSM puts the place
+# far away (i.e. it's actually abroad), Amap's Beijing point is the bogus
+# fallback and we use OSM instead. Genuine Beijing places (北京站 …) pass,
+# because OSM agrees with Amap on them.
+_BEIJING_BOX = (39.4, 41.1, 115.4, 117.6)   # lat_min, lat_max, lng_min, lng_max
+_FALLBACK_KM = 80                            # Amap-vs-OSM gap that means "bogus"
+
+
+def _near_beijing(coord):
+    lat, lng = coord
+    lo_lat, hi_lat, lo_lng, hi_lng = _BEIJING_BOX
+    return lo_lat <= lat <= hi_lat and lo_lng <= lng <= hi_lng
+
+
+def _haversine_km(a, b):
+    (lat1, lng1), (lat2, lng2) = a, b
+    r = 6371.0
+    p1, p2 = math.radians(lat1), math.radians(lat2)
+    dp = math.radians(lat2 - lat1)
+    dl = math.radians(lng2 - lng1)
+    h = math.sin(dp / 2) ** 2 + math.cos(p1) * math.cos(p2) * math.sin(dl / 2) ** 2
+    return 2 * r * math.asin(math.sqrt(h))
+
+
 def _geocode(keyword):
-    """Resolve a keyword to (lat, lon) WGS-84: Amap first, then OSM fallback."""
+    """Resolve a keyword to (lat, lon) WGS-84: Amap (China) with an OSM
+    cross-check that catches Amap's foreign-miss Beijing fallback."""
     global _API_KEY
     if _API_KEY is _UNSET:
         _API_KEY = load_api_keys()        # may be None if no key configured
-    res = get_coordinates(keyword, _API_KEY) if _API_KEY else None
-    if res is None:                       # foreign / Amap miss -> OpenStreetMap
-        res = get_coordinates_osm(keyword)
-    return res
+    amap = get_coordinates(keyword, _API_KEY) if _API_KEY else None
+
+    # Only spend an OSM call when Amap missed outright, or when its answer is in
+    # the Beijing box (so it might be the bogus fallback rather than a real hit).
+    if amap is None or _near_beijing(amap):
+        osm = get_coordinates_osm(keyword)
+        if amap is None:
+            return osm                    # clear Amap miss -> OSM (or None)
+        if osm is not None and _haversine_km(amap, osm) > _FALLBACK_KM:
+            print(f"  Amap returned a Beijing fallback for '{keyword}'; "
+                  f"using OpenStreetMap result instead.")
+            return osm
+        if osm is None:
+            print(f"  Warning: Amap placed '{keyword}' in Beijing and OSM could "
+                  f"not verify it. If this is a foreign place, pin it in "
+                  f"{MANUAL_SRC}.")
+    return amap
 
 
 def _load_manual(src=MANUAL_SRC):

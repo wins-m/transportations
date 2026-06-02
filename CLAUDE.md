@@ -57,6 +57,12 @@ but invoking them explicitly with `python3` (or an activated venv) is still reco
   **OpenStreetMap / Nominatim** fallback (`get_coordinates_osm`) for anything Amap can't resolve
   (mostly foreign places). The result is written back to the bucket YAML. Places neither API can
   resolve are printed and skipped.
+- **Amap's foreign-miss trap.** For a foreign keyword it can't place, Amap doesn't return an empty
+  result — it returns a bogus point **in Beijing**, so a bare `None` check can't catch it. `_geocode`
+  therefore cross-checks: any Amap answer inside the Beijing municipality box (`_BEIJING_BOX`) is
+  verified against OSM, and if OSM puts the place >80 km away (i.e. it's actually abroad) the OSM
+  result is used instead. Genuine Beijing places pass because OSM agrees with Amap on them. If both
+  agree it's foreign but OSM can't verify, it warns to pin the point in `manual.yaml`.
 - **Datum: Amap returns GCJ-02, the map (and OSM/Nominatim) render WGS-84.** `get_coordinates`
   shifts every Amap result back to WGS-84 via `gcj02_to_wgs84` before returning it, so the
   OSM/Leaflet basemap lines up (raw GCJ-02 lands a few hundred metres off — the "China GPS offset").
