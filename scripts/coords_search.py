@@ -26,10 +26,19 @@ def out_of_china(lng, lat):
     push points ~130-270 m off. China's land stays north of ~21 deg N once west
     of ~108 deg E (Yunnan); Hainan and Guangdong sit east of that, so excluding
     the south-west corner drops Indochina without touching Chinese territory.
+
+    Hong Kong and Macau are likewise outside the GCJ-02 obfuscation (it is a
+    mainland-only legal requirement) — Amap serves them in WGS-84 — so the SAR
+    box (lat 22.0-22.58, lng 113.4-114.55) is excluded too. Shenzhen (lat ~22.64)
+    sits just north of it and stays mainland.
     """
     if not (73.66 < lng < 135.05 and 3.86 < lat < 53.55):
         return True
-    return lat < 21.0 and lng < 108.0
+    if lat < 21.0 and lng < 108.0:                       # Indochina peninsula
+        return True
+    if 22.0 <= lat <= 22.58 and 113.40 <= lng <= 114.55:  # Hong Kong / Macau
+        return True
+    return False
 
 
 def _transform_lat(lng, lat):
