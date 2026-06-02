@@ -1,0 +1,25 @@
+# Manual coordinate overrides — highest priority, used verbatim.
+#
+# Entries here win over Amap, the OpenStreetMap fallback, and the per-category
+# caches (railway/airline/other.yaml). They are NEVER geocoded again and NEVER
+# shifted (no GCJ-02 conversion), so put **WGS-84** coordinates here for any
+# place you want pinned exactly — domestic or foreign.
+#
+# How to look one up correctly (must be WGS-84, to line up with the OSM basemap):
+#   - Best: openstreetmap.org — search the place, the URL shows #map=.../<lat>/<lon>,
+#     or right-click -> "Show address". OSM is the same datum as this map's tiles.
+#   - Google Maps: fine for FOREIGN places (WGS-84). For places inside mainland
+#     China use the SATELLITE layer (the road layer is GCJ-02-shifted and will be
+#     ~500 m off); or just use OpenStreetMap.
+#
+# Format — the key must match the name exactly as it appears in
+# configs/locCoords.json (i.e. the normalized route endpoint), then [lat, lon]:
+#
+#   昆明南站:
+#   - 24.8731
+#   - 102.8603
+#   香港西九龙站:
+#   - 22.3028
+#   - 114.165
+#
+# (Leave this file with no active entries until you need to pin something.)

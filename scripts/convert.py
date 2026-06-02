@@ -5,7 +5,7 @@ import re
 import json
 import yaml
 import pandas as pd
-from coords_search import get_coordinates
+from coords_search import get_coordinates, get_coordinates_osm
 from calc import cal_duration
 
 # Map the spreadsheet's 类型 (category) onto the three coordinate buckets used
@@ -135,14 +135,26 @@ def _mod1(x, kind, ref):
     return x
 
 
-# Cached Amap API key — loaded once, lazily, on the first geocode miss.
-_API_KEY = None
+# Loaded once, lazily, on the first geocode miss.
+_API_KEY = _UNSET = object()   # _UNSET = not yet looked up; None = unavailable
+_MANUAL = None                 # hand-pinned WGS-84 overrides (highest priority)
+MANUAL_SRC = './configs/coords/manual.yaml'
 
 
 def cache_coords(sr: pd.Series) -> dict:
-    """generate coordinates of start and end locations"""
+    """generate coordinates of start and end locations.
 
-    global _API_KEY
+    Resolution order per location, highest priority first:
+      1. ``configs/coords/manual.yaml`` — hand-pinned WGS-84, used verbatim.
+      2. the per-category ``configs/coords/{kind}.yaml`` geocode cache.
+      3. geocode a fresh miss: Amap first (China, GCJ-02 -> WGS-84), then fall
+         back to OpenStreetMap/Nominatim (worldwide, native WGS-84).
+    """
+
+    global _API_KEY, _MANUAL
+
+    if _MANUAL is None:
+        _MANUAL = _load_manual()
 
     kind = _decide_trans_kind(sr['类型'])
     src_coords = f'./configs/coords/{kind.lower()}.yaml'
@@ -162,21 +174,20 @@ def cache_coords(sr: pd.Series) -> dict:
         _ = _mod1(x0, kind, ref)
         x2 = _mod2(_, kind=kind)
 
-        if x2 not in head:
-            if _API_KEY is None:
-                _API_KEY = load_api_keys()
-            res = get_coordinates(x2, _API_KEY)
-            if res is None:
-                print(f"Coordinates for {x2} not found.")
-                continue
-            else:
-                lat, lon = res
-                print(f"Find coordinates of {x2}: {lat}, {lon}")
-                chg_flag = 1
-                head[x2] = [lat, lon]
-                locs[x2] = [lat, lon]
-        else:
+        if x2 in _MANUAL:                 # 1. manual override wins, used as-is
+            locs[x2] = _MANUAL[x2]
+        elif x2 in head:                  # 2. per-category geocode cache
             locs[x2] = head[x2]
+        else:                             # 3. geocode: Amap, then OSM fallback
+            res = _geocode(x2)
+            if res is None:
+                print(f"Coordinates for {x2} not found (Amap + OSM).")
+                continue
+            lat, lon = res
+            print(f"Find coordinates of {x2}: {lat}, {lon}")
+            chg_flag = 1
+            head[x2] = [lat, lon]
+            locs[x2] = [lat, lon]
 
     if chg_flag:
         with open(src_coords, 'w', encoding='utf-8') as f:
@@ -185,18 +196,41 @@ def cache_coords(sr: pd.Series) -> dict:
     return locs
 
 
+def _geocode(keyword):
+    """Resolve a keyword to (lat, lon) WGS-84: Amap first, then OSM fallback."""
+    global _API_KEY
+    if _API_KEY is _UNSET:
+        _API_KEY = load_api_keys()        # may be None if no key configured
+    res = get_coordinates(keyword, _API_KEY) if _API_KEY else None
+    if res is None:                       # foreign / Amap miss -> OpenStreetMap
+        res = get_coordinates_osm(keyword)
+    return res
+
+
+def _load_manual(src=MANUAL_SRC):
+    if os.path.exists(src):
+        with open(src, 'r', encoding='utf-8') as f:
+            return yaml.safe_load(f) or {}
+    return {}
+
+
 def load_api_keys(src='./scripts/configs.yaml'):
+    """Return the Amap API key, or ``None`` if it isn't configured.
+
+    Amap is optional now: a missing key just means new China places are geocoded
+    via the OpenStreetMap fallback instead. Returning None (rather than raising)
+    lets the pipeline run key-free."""
     if not os.path.exists(src):
-        raise FileNotFoundError(
-            f"Amap API key file '{src}' not found. A new (uncached) location "
-            f"needs geocoding, which requires this file. Create it with:\n"
-            f"    amap_api: <your-amap-api-key>\n"
-            f"(It is gitignored.) If every place is already cached in "
-            f"configs/coords/*.yaml, no key is needed.")
+        print(f"Note: Amap key file '{src}' not found — new locations will be "
+              f"geocoded via OpenStreetMap only. For better China coverage, add "
+              f"it:\n    amap_api: <your-amap-api-key>   (it is gitignored)")
+        return None
     with open(src, 'r', encoding='utf-8') as f:
         conf = yaml.safe_load(f) or {}
     if 'amap_api' not in conf:
-        raise KeyError(f"'amap_api' key missing from '{src}'.")
+        print(f"Note: 'amap_api' key missing from '{src}' — using OpenStreetMap "
+              f"fallback for new locations.")
+        return None
     return conf['amap_api']
 
 

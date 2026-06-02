@@ -120,6 +120,40 @@ def get_coordinates(keyword, api_key, retries=4, timeout=10):
     return None
 
 
+def get_coordinates_osm(keyword, retries=3, timeout=10):
+    """Geocode a keyword via OpenStreetMap Nominatim. Returns (lat, lon) or None.
+
+    Nominatim is worldwide and native **WGS-84** — the same datum as the
+    Leaflet/OSM basemap — so the result is used verbatim (no GCJ-02 shift). This
+    is the fallback for places Amap can't resolve (mostly foreign locations).
+    Respects Nominatim's usage policy: a descriptive User-Agent and a <=1 req/s
+    pace. (The public endpoint must be reachable; behind a restricted network it
+    will fail and the place is simply skipped.)
+    """
+    url = "https://nominatim.openstreetmap.org/search"
+    params = {"q": keyword, "format": "json", "limit": 1}
+    headers = {"User-Agent": "transportations-travel-map/1.0 (personal trip geocoding)"}
+    for attempt in range(retries):
+        try:
+            time.sleep(1.0)  # be polite to the shared public endpoint
+            response = requests.get(url, params=params, headers=headers,
+                                    timeout=timeout)
+            if response.status_code == 200:
+                data = response.json()
+                if data:
+                    return float(data[0]['lat']), float(data[0]['lon'])
+                # A valid 200 response with no match is not retryable.
+                return None
+            print(f"  Nominatim returned HTTP {response.status_code} for "
+                  f"'{keyword}' (attempt {attempt + 1}/{retries})")
+        except (requests.RequestException, ValueError, KeyError) as exc:
+            print(f"  OSM error geocoding '{keyword}' "
+                  f"(attempt {attempt + 1}/{retries}): {exc}")
+        if attempt < retries - 1:
+            time.sleep(2 ** attempt)  # 1s, 2s, 4s, ...
+    return None
+
+
 # Example usage
 if __name__ == "__main__":
     with open('./scripts/configs.yaml', 'r', encoding='utf-8') as f:

@@ -15,18 +15,31 @@ The source spreadsheet and all place names are in **Chinese**.
 pip install -r scripts/requirements.txt
 ```
 
-Geocoding new (uncached) locations needs an **Amap (高德) API key** in
-`scripts/configs.yaml` (gitignored):
+New (uncached) locations are geocoded in this order: a hand-pinned
+**`configs/coords/manual.yaml`** override → the **Amap (高德)** API (best for
+China) → an **OpenStreetMap / Nominatim** fallback (worldwide, for places Amap
+can't find). An Amap key is *optional* — add it to `scripts/configs.yaml`
+(gitignored) for better Chinese coverage:
 
 ```yaml
 amap_api: <your-amap-api-key>
 ```
 
-If every place is already cached in `configs/coords/*.yaml`, no key is needed.
+Without it, new places fall back to OpenStreetMap. If every place is already
+cached in `configs/coords/*.yaml`, no geocoding happens at all.
 
-Amap returns coordinates in **GCJ-02** (China's offset datum); the pipeline
-shifts them to **WGS-84** so they line up with the OpenStreetMap basemap. The
-correction only applies inside China — foreign points are left as-is.
+### Coordinate datums
+
+Amap returns **GCJ-02** (China's offset datum); the pipeline shifts those to
+**WGS-84** so they line up with the OpenStreetMap basemap (the correction
+applies inside China only — foreign points, incl. Hong Kong/Macau, are left
+as-is). OpenStreetMap and `manual.yaml` are already WGS-84.
+
+To **pin a point exactly** (domestic or foreign), add it to
+`configs/coords/manual.yaml` — it overrides everything and is used verbatim.
+Look the coordinate up on **OpenStreetMap** (same datum as the map). Note that
+Google Maps' road layer *inside mainland China* is also GCJ-02-shifted (~500 m
+off), so use OSM or Google's satellite layer for Chinese points.
 
 ## Usage
 

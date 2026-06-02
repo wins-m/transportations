@@ -48,19 +48,24 @@ but invoking them explicitly with `python3` (or an activated venv) is still reco
 - Reads the Excel via `pd.read_excel(..., sheet_name='Sheet1', skipfooter=4).iloc[::-1]` — the last
   4 rows are dropped and **row order is reversed** (spreadsheet is newest-first; output is
   chronological).
-- For each row, `cache_coords()` geocodes the origin/terminal. `_decide_trans_kind` maps `类型`
-  into one of three buckets — `Railway` (铁路), `Airline` (飞机), `Other` (公路/水路/自行车/其他) —
-  and coordinates are cached per-bucket in **`configs/coords/{railway,airline,other}.yaml`**. A
-  location absent from its YAML cache is looked up via the **Amap (高德) geocoding REST API**
-  (`scripts/coords_search.py::get_coordinates`) and written back to the YAML. Locations the API
-  can't resolve are printed and skipped.
-- **Datum: Amap returns GCJ-02, the map renders WGS-84.** `get_coordinates` shifts every Amap
-  result back to WGS-84 via `gcj02_to_wgs84` before returning it, so the OSM/Leaflet basemap lines
-  up (raw GCJ-02 lands a few hundred metres off — the "China GPS offset"). The shift only applies
-  inside China; `out_of_china` leaves foreign points (Japan, SE Asia, …) untouched — note its box
-  also excludes the Indochina peninsula, which Amap already serves in WGS-84. Coordinates entered by
-  hand from Google/OSM are already WGS-84 and must NOT be re-shifted (they're distinguishable in the
-  caches by their long decimal precision; Amap's are ≤6 places).
+- For each row, `cache_coords()` resolves the origin/terminal in priority order: **(1)
+  `configs/coords/manual.yaml`** — hand-pinned WGS-84 overrides, used verbatim and never geocoded
+  or shifted; **(2)** the per-bucket geocode cache, where `_decide_trans_kind` maps `类型` into one
+  of three buckets — `Railway` (铁路), `Airline` (飞机), `Other` (公路/水路/自行车/其他) — cached in
+  **`configs/coords/{railway,airline,other}.yaml`**; **(3)** a fresh geocode for a cache miss, via
+  `_geocode`: the **Amap (高德) REST API** first (`coords_search.py::get_coordinates`), then an
+  **OpenStreetMap / Nominatim** fallback (`get_coordinates_osm`) for anything Amap can't resolve
+  (mostly foreign places). The result is written back to the bucket YAML. Places neither API can
+  resolve are printed and skipped.
+- **Datum: Amap returns GCJ-02, the map (and OSM/Nominatim) render WGS-84.** `get_coordinates`
+  shifts every Amap result back to WGS-84 via `gcj02_to_wgs84` before returning it, so the
+  OSM/Leaflet basemap lines up (raw GCJ-02 lands a few hundred metres off — the "China GPS offset").
+  The shift only applies inside China; `out_of_china` leaves foreign points untouched — its box also
+  excludes the Indochina peninsula **and Hong Kong/Macau** (lat 22.0–22.58, lng 113.40–114.55, with
+  Shenzhen just north of it), all of which Amap already serves in WGS-84. `get_coordinates_osm` and
+  `manual.yaml` are native WGS-84 and are never shifted. **Caveat:** Google Maps' road layer inside
+  mainland China is *also* GCJ-02-shifted, so coordinates copied from it are not clean WGS-84 — use
+  OpenStreetMap (same datum as the basemap) or Google's satellite layer instead.
 - `_mod1`/`_mod2` normalize raw place strings into Amap-friendly keywords (appending `站` / `机场` /
   `航站楼`, handling airport `T<n>` terminals, English `Station` suffixes). The normalized name
   becomes the key used everywhere downstream, so route endpoints must match `locCoords` keys exactly.
@@ -83,14 +88,16 @@ a year/type filter, a travel-stats panel (bottom-left), and an optional heatmap 
 
 ## Conventions & gotchas
 
-- **Amap API key required for new locations.** `cache_coords` reads `conf['amap_api']` from
-  `./scripts/configs.yaml`, which is **gitignored** (`**/configs.yaml`) and not in the repo. Geocoding
-  (and therefore a clean `main.py` run that encounters an uncached place) needs this file. If every
-  place is already in the `configs/coords/*.yaml` caches, no API call — and no key — is needed.
-- **Two coordinate stores, different roles.** `configs/coords/*.yaml` are the per-category geocode
-  caches (the source of truth, append-only via the API). `configs/locCoords.json` is the regenerated,
-  flattened map of every place used in the current dataset. Don't hand-edit `locCoords.json`; fix the
-  YAML cache or the spreadsheet.
+- **Amap API key is optional.** `load_api_keys` reads `conf['amap_api']` from `./scripts/configs.yaml`,
+  which is **gitignored** (`**/configs.yaml`) and not in the repo. If it's missing, `load_api_keys`
+  returns `None` (no longer raises) and new locations are geocoded via the OpenStreetMap fallback
+  only — so the pipeline runs key-free, just with weaker Chinese place-name matching. If every place
+  is already cached, no geocoding happens at all.
+- **Coordinate stores, by priority.** `configs/coords/manual.yaml` holds hand-pinned WGS-84 overrides
+  (highest priority, used verbatim, never geocoded/shifted — the place to fix any point exactly).
+  `configs/coords/{railway,airline,other}.yaml` are the per-category geocode caches (append-only via
+  the APIs). `configs/locCoords.json` is the regenerated, flattened map of every place in the current
+  dataset. Don't hand-edit `locCoords.json`; fix `manual.yaml`, the YAML cache, or the spreadsheet.
 - **`templates/map_heat16_ds.html` is the only live template** — the current default that produced
   `index.html`. All other variants (the earlier `map_heat{12,13,15}_ds.html`, `map_ds.html`,
   `map_detail_ds.html`, `fullmap_ds.html`, `map_with_arrows.html`, and the legacy standalone
