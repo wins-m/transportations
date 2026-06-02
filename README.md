@@ -24,6 +24,10 @@ amap_api: <your-amap-api-key>
 
 If every place is already cached in `configs/coords/*.yaml`, no key is needed.
 
+Amap returns coordinates in **GCJ-02** (China's offset datum); the pipeline
+shifts them to **WGS-84** so they line up with the OpenStreetMap basemap. The
+correction only applies inside China — foreign points are left as-is.
+
 ## Usage
 
 Run the full pipeline from the **repo root** (paths default relative to it):

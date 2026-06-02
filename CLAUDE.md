@@ -54,6 +54,13 @@ but invoking them explicitly with `python3` (or an activated venv) is still reco
   location absent from its YAML cache is looked up via the **Amap (高德) geocoding REST API**
   (`scripts/coords_search.py::get_coordinates`) and written back to the YAML. Locations the API
   can't resolve are printed and skipped.
+- **Datum: Amap returns GCJ-02, the map renders WGS-84.** `get_coordinates` shifts every Amap
+  result back to WGS-84 via `gcj02_to_wgs84` before returning it, so the OSM/Leaflet basemap lines
+  up (raw GCJ-02 lands a few hundred metres off — the "China GPS offset"). The shift only applies
+  inside China; `out_of_china` leaves foreign points (Japan, SE Asia, …) untouched — note its box
+  also excludes the Indochina peninsula, which Amap already serves in WGS-84. Coordinates entered by
+  hand from Google/OSM are already WGS-84 and must NOT be re-shifted (they're distinguishable in the
+  caches by their long decimal precision; Amap's are ≤6 places).
 - `_mod1`/`_mod2` normalize raw place strings into Amap-friendly keywords (appending `站` / `机场` /
   `航站楼`, handling airport `T<n>` terminals, English `Station` suffixes). The normalized name
   becomes the key used everywhere downstream, so route endpoints must match `locCoords` keys exactly.
