@@ -5,7 +5,7 @@
 <meta charset="utf-8"/>
 <title>旅行交通记录地图</title>
 <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
-<meta content="个人旅行交通记录的交互式地图：铁路、航空与其他线路、站点弹窗、年份/类型筛选与统计。" name="description">
+<meta content="个人旅行交通记录的交互式地图：铁路、航空与其他线路、站点弹窗、年份/类型筛选与统计。" name="description"/>
 <link href="https://unpkg.com/leaflet/dist/leaflet.css" rel="stylesheet"/>
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <!-- Optional heatmap plugin; the map degrades gracefully if it fails to load. -->
@@ -95,7 +95,7 @@
             }
         }
     </style>
-</meta></head>
+</head>
 <body>
 <div id="map"></div>
 <script>
@@ -152,7 +152,7 @@
 			'日喀则站': [29.270766337191052, 88.88026655309339],
 			'拉萨贡嘎机场': [29.297736436396157, 90.9064690626356],
 			'成都双流机场': [30.56256234669099, 103.94908832329938],
-			'宁波栎社机场': [29.82364391088336, 121.46193506846807],
+			'宁波栎社机场': [29.829045293404988, 121.45745852912893],
 			'南浦大桥长途旅游客运站': [31.210187358111664, 121.49690545684305],
 			'岱山竹屿码头': [30.243501307920294, 122.22540746965873],
 			'喀什徠宁机场': [39.5408285337985, 76.02136223618615],
@@ -454,7 +454,9 @@
 			{'type': 'Other', 'date': '2026-04-27', 'from': '新城汽车客运站', 'to': '杭州东站汽车站', 'vehicle': '0900', 'time': '10:20-13:50', 'duration': '03:30:00', 'distance': '226 km', 'seat': 1, 'price': 110, 'note': '-'}, 
 			{'type': 'Other', 'date': '2026-04-30', 'from': '杭州杨家山', 'to': '安吉古城遗址公园', 'vehicle': '包车', 'time': '-', 'duration': '', 'distance': ''-' km', 'seat': '-', 'price': '-', 'note': '-'}, 
 			{'type': 'Other', 'date': '2026-05-02', 'from': '安吉古城遗址公园', 'to': '杭州黄龙洞', 'vehicle': '包车', 'time': '-', 'duration': '', 'distance': ''-' km', 'seat': '-', 'price': '-', 'note': '-'}, 
-			{'type': 'Other', 'date': '2026-05-03', 'from': '杭州东站汽车站', 'to': '新城汽车客运站', 'vehicle': '7022', 'time': '15:20-18:40', 'duration': '03:20:00', 'distance': '226 km', 'seat': 6, 'price': 110, 'note': '-'}];
+			{'type': 'Other', 'date': '2026-05-03', 'from': '杭州东站汽车站', 'to': '新城汽车客运站', 'vehicle': '7022', 'time': '15:20-18:40', 'duration': '03:20:00', 'distance': '226 km', 'seat': 6, 'price': 110, 'note': '-'}, 
+			{'type': 'Other', 'date': '2026-08-11', 'from': '新城汽车客运站', 'to': '宁波汽车南站', 'vehicle': '1016', 'time': '16:00-17:40', 'duration': '01:40:00', 'distance': '96 km', 'seat': 3, 'price': 57, 'note': '-'}, 
+			{'type': 'Airline', 'date': '2026-08-11', 'from': '宁波栎社机场', 'to': '深圳宝安机场', 'vehicle': 'CZ6154', 'time': '20:29-22:22', 'duration': '01:53:00', 'distance': '1237 km', 'seat': '53A', 'price': 890, 'note': '-'}];
 
         // 颜色映射
         const typeColors = { Railway: 'blue', Airline: 'red', Other: 'black' };

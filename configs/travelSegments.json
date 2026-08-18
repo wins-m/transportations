@@ -2390,5 +2390,31 @@
     "seat": 6,
     "price": 110,
     "note": NaN
+  },
+  {
+    "type": "Other",
+    "date": "2026-08-11",
+    "from": "新城汽车客运站",
+    "to": "宁波汽车南站",
+    "vehicle": "1016",
+    "time": "16:00-17:40",
+    "duration": "01:40:00",
+    "distance": "96 km",
+    "seat": 3,
+    "price": 57,
+    "note": NaN
+  },
+  {
+    "type": "Airline",
+    "date": "2026-08-11",
+    "from": "宁波栎社机场",
+    "to": "深圳宝安机场",
+    "vehicle": "CZ6154",
+    "time": "20:29-22:22",
+    "duration": "01:53:00",
+    "distance": "1237 km",
+    "seat": "53A",
+    "price": 890,
+    "note": NaN
   }
 ]
