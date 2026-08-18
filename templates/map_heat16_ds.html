@@ -261,7 +261,7 @@
                       </div>
                       <div style="display:flex;justify-content:space-between">
                         <span>${trip.time} | ${trip.seat} | ¥${trip.price}</span>
-                        <span> [${trip.note}]</span>
+                        <span>${trip.note ? ` [${trip.note}]` : ''}</span>
                       </div>
                     </div>
                   `).join('')}
@@ -314,7 +314,7 @@
                               </div>
                               <div style="display:flex;justify-content:space-between">
                                 <span>${trip.time} | ${trip.seat} | ¥${trip.price}</span>
-                                <span> [${trip.note}]</span>
+                                <span>${trip.note ? ` [${trip.note}]` : ''}</span>
                               </div>
                             </div>
                           `).join('')}

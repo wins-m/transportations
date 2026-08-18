@@ -83,7 +83,7 @@ def gen_travel_segments(df, tgt):
             'distance': str(a['区间里程']) + ' km' if a['区间里程'] is not None else '-',
             'seat': a['座位号'],
             'price': a['票价'],
-            'note': a['备注'] if a['备注'] is not None else '',
+            'note': a['备注'] if pd.notna(a['备注']) else '',
         })
     print(f"  -> {len(res)} segments")
     json_dump(data=res, tgt=tgt)

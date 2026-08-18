@@ -153,7 +153,7 @@
     "distance": "128.5 km",
     "seat": "-",
     "price": "-",
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Other",
@@ -166,7 +166,7 @@
     "distance": "75.5 km",
     "seat": "-",
     "price": "-",
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Other",
@@ -179,7 +179,7 @@
     "distance": "103.3 km",
     "seat": "-",
     "price": "-",
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Other",
@@ -205,7 +205,7 @@
     "distance": "72 km",
     "seat": "-",
     "price": "-",
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Other",
@@ -218,7 +218,7 @@
     "distance": "83 km",
     "seat": "-",
     "price": "-",
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Railway",
@@ -270,7 +270,7 @@
     "distance": "95.07 km",
     "seat": "-",
     "price": "-",
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Other",
@@ -283,7 +283,7 @@
     "distance": "118.9 km",
     "seat": "-",
     "price": "-",
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Other",
@@ -296,7 +296,7 @@
     "distance": "74.14 km",
     "seat": "-",
     "price": "-",
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Other",
@@ -309,7 +309,7 @@
     "distance": "114.7 km",
     "seat": "-",
     "price": "-",
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Other",
@@ -322,7 +322,7 @@
     "distance": "91.79 km",
     "seat": "-",
     "price": "-",
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Other",
@@ -335,7 +335,7 @@
     "distance": "116.42 km",
     "seat": "-",
     "price": "-",
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Other",
@@ -348,7 +348,7 @@
     "distance": "95.1 km",
     "seat": "-",
     "price": "-",
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Other",
@@ -361,7 +361,7 @@
     "distance": "122.1 km",
     "seat": "-",
     "price": "-",
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Other",
@@ -374,7 +374,7 @@
     "distance": "122.95 km",
     "seat": "-",
     "price": "-",
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Other",
@@ -387,7 +387,7 @@
     "distance": "153.85 km",
     "seat": "-",
     "price": "-",
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Other",
@@ -400,7 +400,7 @@
     "distance": "145.2 km",
     "seat": "-",
     "price": "-",
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Railway",
@@ -608,7 +608,7 @@
     "distance": "nan km",
     "seat": "-",
     "price": "-",
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Railway",
@@ -712,7 +712,7 @@
     "distance": "nan km",
     "seat": NaN,
     "price": NaN,
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Railway",
@@ -751,7 +751,7 @@
     "distance": "292 km",
     "seat": "-",
     "price": "-",
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Other",
@@ -764,7 +764,7 @@
     "distance": "292 km",
     "seat": "-",
     "price": "-",
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Airline",
@@ -1401,7 +1401,7 @@
     "distance": "316 km",
     "seat": "07车07F",
     "price": 174,
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Other",
@@ -1427,7 +1427,7 @@
     "distance": "- km",
     "seat": "-",
     "price": "-",
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Other",
@@ -1453,7 +1453,7 @@
     "distance": "182 km",
     "seat": "4B",
     "price": 61,
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Railway",
@@ -1466,7 +1466,7 @@
     "distance": "nan km",
     "seat": "6车29号上",
     "price": 188,
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Railway",
@@ -1479,7 +1479,7 @@
     "distance": "nan km",
     "seat": NaN,
     "price": "THB 848",
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Railway",
@@ -1505,7 +1505,7 @@
     "distance": "nan km",
     "seat": NaN,
     "price": "RM 12.8",
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Railway",
@@ -1518,7 +1518,7 @@
     "distance": "nan km",
     "seat": NaN,
     "price": "RM 46.0",
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Other",
@@ -1531,7 +1531,7 @@
     "distance": "nan km",
     "seat": "03",
     "price": "RM 14.4",
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Other",
@@ -1544,7 +1544,7 @@
     "distance": "nan km",
     "seat": NaN,
     "price": "RM 80.15",
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Airline",
@@ -1557,7 +1557,7 @@
     "distance": "3649 km",
     "seat": "28J",
     "price": 1043,
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Airline",
@@ -1570,7 +1570,7 @@
     "distance": "1538 km",
     "seat": "23A",
     "price": 1510,
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Airline",
@@ -1583,7 +1583,7 @@
     "distance": "1538 km",
     "seat": "38K",
     "price": 1330,
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Railway",
@@ -1609,7 +1609,7 @@
     "distance": "159 km",
     "seat": "05车05C",
     "price": 59,
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Railway",
@@ -1648,7 +1648,7 @@
     "distance": "159 km",
     "seat": "05车10C",
     "price": 59,
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Railway",
@@ -1752,7 +1752,7 @@
     "distance": "104 km",
     "seat": 3,
     "price": 64,
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Airline",
@@ -1778,7 +1778,7 @@
     "distance": "nan km",
     "seat": NaN,
     "price": 25,
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Railway",
@@ -1791,7 +1791,7 @@
     "distance": "nan km",
     "seat": NaN,
     "price": 21,
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Railway",
@@ -1804,7 +1804,7 @@
     "distance": "nan km",
     "seat": NaN,
     "price": 34,
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Railway",
@@ -1817,7 +1817,7 @@
     "distance": "nan km",
     "seat": NaN,
     "price": 25.5,
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Railway",
@@ -1830,7 +1830,7 @@
     "distance": "nan km",
     "seat": NaN,
     "price": 12,
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Railway",
@@ -1843,7 +1843,7 @@
     "distance": "nan km",
     "seat": "11车2-E",
     "price": 295.5,
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Railway",
@@ -1856,7 +1856,7 @@
     "distance": "nan km",
     "seat": "7车3-E",
     "price": 422,
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Other",
@@ -1882,7 +1882,7 @@
     "distance": "nan km",
     "seat": NaN,
     "price": 86,
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Other",
@@ -1895,7 +1895,7 @@
     "distance": "nan km",
     "seat": NaN,
     "price": 60.5,
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Other",
@@ -1908,7 +1908,7 @@
     "distance": "nan km",
     "seat": NaN,
     "price": 39.5,
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Other",
@@ -1921,7 +1921,7 @@
     "distance": "nan km",
     "seat": NaN,
     "price": 125,
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Railway",
@@ -1934,7 +1934,7 @@
     "distance": "nan km",
     "seat": NaN,
     "price": 11,
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Railway",
@@ -1947,7 +1947,7 @@
     "distance": "nan km",
     "seat": NaN,
     "price": 13,
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Railway",
@@ -1960,7 +1960,7 @@
     "distance": "nan km",
     "seat": NaN,
     "price": 11,
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Railway",
@@ -1973,7 +1973,7 @@
     "distance": "nan km",
     "seat": NaN,
     "price": 42.9,
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Railway",
@@ -1986,7 +1986,7 @@
     "distance": "nan km",
     "seat": NaN,
     "price": 10.45,
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Railway",
@@ -1999,7 +1999,7 @@
     "distance": "nan km",
     "seat": NaN,
     "price": 68.6,
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Airline",
@@ -2025,7 +2025,7 @@
     "distance": "104 km",
     "seat": 37,
     "price": 70,
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Other",
@@ -2038,7 +2038,7 @@
     "distance": "96 km",
     "seat": 22,
     "price": 57,
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Other",
@@ -2051,7 +2051,7 @@
     "distance": "nan km",
     "seat": "-",
     "price": "-",
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Other",
@@ -2064,7 +2064,7 @@
     "distance": "nan km",
     "seat": "-",
     "price": "-",
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Other",
@@ -2077,7 +2077,7 @@
     "distance": "nan km",
     "seat": "-",
     "price": "-",
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Other",
@@ -2090,7 +2090,7 @@
     "distance": "nan km",
     "seat": "-",
     "price": "-",
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Other",
@@ -2103,7 +2103,7 @@
     "distance": "nan km",
     "seat": "-",
     "price": "-",
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Other",
@@ -2116,7 +2116,7 @@
     "distance": "nan km",
     "seat": "-",
     "price": "-",
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Other",
@@ -2129,7 +2129,7 @@
     "distance": "nan km",
     "seat": "-",
     "price": "-",
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Other",
@@ -2142,7 +2142,7 @@
     "distance": "nan km",
     "seat": "-",
     "price": "-",
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Other",
@@ -2155,7 +2155,7 @@
     "distance": "nan km",
     "seat": "-",
     "price": "-",
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Other",
@@ -2168,7 +2168,7 @@
     "distance": "nan km",
     "seat": "-",
     "price": "-",
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Other",
@@ -2181,7 +2181,7 @@
     "distance": "nan km",
     "seat": "-",
     "price": "-",
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Other",
@@ -2194,7 +2194,7 @@
     "distance": "nan km",
     "seat": "-",
     "price": "-",
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Other",
@@ -2207,7 +2207,7 @@
     "distance": "nan km",
     "seat": "-",
     "price": "-",
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Other",
@@ -2220,7 +2220,7 @@
     "distance": "nan km",
     "seat": "-",
     "price": "-",
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Other",
@@ -2233,7 +2233,7 @@
     "distance": "nan km",
     "seat": "-",
     "price": "-",
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Other",
@@ -2246,7 +2246,7 @@
     "distance": "nan km",
     "seat": "-",
     "price": "-",
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Other",
@@ -2259,7 +2259,7 @@
     "distance": "nan km",
     "seat": "-",
     "price": "-",
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Other",
@@ -2272,7 +2272,7 @@
     "distance": "nan km",
     "seat": "-",
     "price": "-",
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Railway",
@@ -2285,7 +2285,7 @@
     "distance": "498 km",
     "seat": "02车16C号",
     "price": 182,
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Airline",
@@ -2298,7 +2298,7 @@
     "distance": "1994 km",
     "seat": "15A",
     "price": 429,
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Other",
@@ -2311,7 +2311,7 @@
     "distance": "104 km",
     "seat": 19,
     "price": 70,
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Other",
@@ -2337,7 +2337,7 @@
     "distance": "226 km",
     "seat": 11,
     "price": 110,
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Other",
@@ -2350,7 +2350,7 @@
     "distance": "226 km",
     "seat": 1,
     "price": 110,
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Other",
@@ -2363,7 +2363,7 @@
     "distance": "nan km",
     "seat": NaN,
     "price": NaN,
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Other",
@@ -2376,7 +2376,7 @@
     "distance": "nan km",
     "seat": NaN,
     "price": NaN,
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Other",
@@ -2389,7 +2389,7 @@
     "distance": "226 km",
     "seat": 6,
     "price": 110,
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Other",
@@ -2402,7 +2402,7 @@
     "distance": "96 km",
     "seat": 3,
     "price": 57,
-    "note": NaN
+    "note": ""
   },
   {
     "type": "Airline",
@@ -2415,6 +2415,6 @@
     "distance": "1237 km",
     "seat": "53A",
     "price": 890,
-    "note": NaN
+    "note": ""
   }
 ]
