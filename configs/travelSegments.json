@@ -2416,5 +2416,31 @@
     "seat": "53A",
     "price": 890,
     "note": ""
+  },
+  {
+    "type": "Airline",
+    "date": "2026-08-20",
+    "from": "深圳宝安机场",
+    "to": "宁波栎社机场",
+    "vehicle": "CZ6591",
+    "time": "07:42-09:38",
+    "duration": "01:56:00",
+    "distance": "1237 km",
+    "seat": "63H",
+    "price": 930,
+    "note": ""
+  },
+  {
+    "type": "Other",
+    "date": "2026-08-20",
+    "from": "宁波汽车南站",
+    "to": "新城汽车客运站",
+    "vehicle": NaN,
+    "time": "12:40-14:18",
+    "duration": "01:38:00",
+    "distance": "96 km",
+    "seat": 32,
+    "price": 57,
+    "note": ""
   }
 ]
