@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8" />
+    <title>出行仪表盘</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="description" content="个人旅行交通记录的统计仪表盘：年度趋势、类型分布、常去路线、花费与时速统计。" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+CiAgPHBhdGggZD0iTTYuOCAxNy4zIEMxMCAxNSwgOCAxMCwgMTIgOSBDMTYgOCwgMTUgNiwgMTcuMiA2LjgiIHN0cm9rZT0iIzJFN0RGRiIgc3Ryb2tlLXdpZHRoPSIyLjIiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWRhc2hhcnJheT0iMi40IDIuNCIvPgogIDxjaXJjbGUgY3g9IjUiIGN5PSIxOSIgcj0iMi43IiBmaWxsPSIjMkU3REZGIi8+CiAgPGNpcmNsZSBjeD0iMTkiIGN5PSI1IiByPSIyLjciIGZpbGw9IiMyRTdERkYiLz4KICA8Y2lyY2xlIGN4PSI1IiBjeT0iMTkiIHI9IjEuMSIgZmlsbD0iI2ZmZmZmZiIvPgogIDxjaXJjbGUgY3g9IjE5IiBjeT0iNSIgcj0iMS4xIiBmaWxsPSIjZmZmZmZmIi8+Cjwvc3ZnPgo=" />
+    <style>
+        :root {
+            color-scheme: light;
+            --page: #f9f9f7;
+            --surface: #fcfcfb;
+            --text-primary: #0b0b0b;
+            --text-secondary: #52514e;
+            --text-muted: #898781;
+            --gridline: #e1e0d9;
+            --baseline: #c3c2b7;
+            --border: rgba(11, 11, 11, 0.10);
+            --series-railway: #2a78d6;
+            --series-airline: #eb6834;
+            --series-other: #1baf7a;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                color-scheme: dark;
+                --page: #0d0d0d;
+                --surface: #1a1a19;
+                --text-primary: #ffffff;
+                --text-secondary: #c3c2b7;
+                --text-muted: #898781;
+                --gridline: #2c2c2a;
+                --baseline: #383835;
+                --border: rgba(255, 255, 255, 0.10);
+                --series-railway: #3987e5;
+                --series-airline: #d95926;
+                --series-other: #199e70;
+            }
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: var(--page);
+            color: var(--text-primary);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+                "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+        }
+
+        .wrap {
+            max-width: 1080px;
+            margin: 0 auto;
+            padding: 24px 16px 64px;
+        }
+
+        header {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        header h1 {
+            font-size: 22px;
+            margin: 0;
+        }
+
+        header p {
+            margin: 4px 0 0;
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+
+        header a {
+            color: var(--series-railway);
+            text-decoration: none;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+
+        header a:hover {
+            text-decoration: underline;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px 18px;
+        }
+
+        .hero-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .stat-tile .label {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .stat-tile .value {
+            font-size: 26px;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+
+        .stat-tile .value .unit {
+            font-size: 13px;
+            font-weight: 400;
+            color: var(--text-secondary);
+            margin-left: 2px;
+        }
+
+        section {
+            margin-bottom: 20px;
+        }
+
+        section h2 {
+            font-size: 15px;
+            margin: 0 0 2px;
+        }
+
+        section .sub {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin: 0 0 12px;
+        }
+
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        @media (max-width: 700px) {
+            .two-col {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .legend {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+        }
+
+        .legend span {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .legend i {
+            width: 10px;
+            height: 10px;
+            border-radius: 2px;
+            display: inline-block;
+        }
+
+        /* ---- 年度堆叠柱状图 ---- */
+        .stack-chart {
+            display: flex;
+            align-items: flex-end;
+            gap: 6px;
+            height: 180px;
+            padding-top: 8px;
+            border-bottom: 1px solid var(--baseline);
+        }
+
+        .stack-col {
+            flex: 1;
+            display: flex;
+            flex-direction: column-reverse;
+            align-items: stretch;
+            height: 100%;
+            min-width: 0;
+        }
+
+        .stack-seg {
+            width: 100%;
+            border-radius: 4px 4px 0 0;
+            margin-bottom: 2px;
+            cursor: default;
+        }
+
+        .stack-seg:first-child {
+            margin-bottom: 0;
+            border-radius: 0;
+        }
+
+        .stack-labels {
+            display: flex;
+            gap: 6px;
+            margin-top: 6px;
+        }
+
+        .stack-labels span {
+            flex: 1;
+            text-align: center;
+            font-size: 11px;
+            color: var(--text-muted);
+            min-width: 0;
+        }
+
+        /* ---- 水平条形图 ---- */
+        .hbar-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .hbar-row .name {
+            width: 40%;
+            font-size: 13px;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .hbar-row .track {
+            flex: 1;
+            height: 16px;
+            background: var(--gridline);
+            border-radius: 4px;
+            position: relative;
+        }
+
+        .hbar-row .fill {
+            height: 100%;
+            border-radius: 4px;
+            min-width: 4px;
+        }
+
+        .hbar-row .val {
+            width: 54px;
+            text-align: right;
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* ---- 分类柱状图（各类型平均时速）---- */
+        .cat-bars {
+            display: flex;
+            gap: 16px;
+            align-items: flex-end;
+            height: 120px;
+        }
+
+        .cat-bar-col {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            height: 100%;
+        }
+
+        .cat-bar-col .bar {
+            width: 100%;
+            max-width: 40px;
+            border-radius: 4px 4px 0 0;
+        }
+
+        .cat-bar-col .cap {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .cat-bar-col .name {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 6px;
+        }
+
+        #tooltip {
+            position: fixed;
+            pointer-events: none;
+            background: var(--text-primary);
+            color: var(--page);
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 5px;
+            transform: translate(-50%, -130%);
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.08s;
+            z-index: 10;
+        }
+
+        #tooltip.show {
+            opacity: 1;
+        }
+
+        .empty-note {
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+
+        footer {
+            margin-top: 24px;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrap">
+        <header>
+            <div>
+                <h1>出行仪表盘</h1>
+                <p>基于 <code>configs/travelSegments.json</code> 汇总的出行统计</p>
+            </div>
+            <a href="./index.html">🗺️ 返回地图</a>
+        </header>
+        <div id="app"></div>
+        <footer id="footer"></footer>
+    </div>
+    <div id="tooltip"></div>
+
+    <script>
+        const TYPE_LABEL = { Railway: '铁路', Airline: '航空', Other: '其他' };
+        const TYPE_COLOR_VAR = { Railway: '--series-railway', Airline: '--series-airline', Other: '--series-other' };
+        const typeColor = t => getComputedStyle(document.documentElement).getPropertyValue(TYPE_COLOR_VAR[t] || '--series-other').trim();
+
+        function parseDistanceKm(s) {
+            const m = /([\d.]+)/.exec(s || '');
+            return m ? parseFloat(m[1]) : 0;
+        }
+        function parseDurationHours(s) {
+            const m = /^(-?\d+):(\d+):/.exec(s || '');
+            if (!m) return 0;
+            const h = parseInt(m[1], 10) + parseInt(m[2], 10) / 60;
+            return h > 0 ? h : 0; // 个别原始记录跨零点推算出负值，忽略而非拉低统计
+        }
+
+        const tooltip = document.getElementById('tooltip');
+        function bindTooltip(el, text) {
+            el.addEventListener('mousemove', e => {
+                tooltip.textContent = text;
+                tooltip.style.left = e.clientX + 'px';
+                tooltip.style.top = e.clientY + 'px';
+                tooltip.classList.add('show');
+            });
+            el.addEventListener('mouseleave', () => tooltip.classList.remove('show'));
+        }
+
+        function dominantType(types) {
+            return Object.entries(types).sort((a, b) => b[1] - a[1])[0][0];
+        }
+
+        function fmt(n, digits = 0) {
+            return n.toLocaleString('zh-CN', { maximumFractionDigits: digits, minimumFractionDigits: digits });
+        }
+
+        function statTile(label, value, unit) {
+            const div = document.createElement('div');
+            div.className = 'card stat-tile';
+            div.innerHTML = `<div class="label">${label}</div><div class="value">${value}${unit ? `<span class="unit">${unit}</span>` : ''}</div>`;
+            return div;
+        }
+
+        function legendRow(types) {
+            const div = document.createElement('div');
+            div.className = 'legend';
+            div.innerHTML = types.map(t =>
+                `<span><i style="background:${typeColor(t)}"></i>${TYPE_LABEL[t]}</span>`
+            ).join('');
+            return div;
+        }
+
+        function renderStackChart(container, years, byYearType) {
+            const chart = document.createElement('div');
+            chart.className = 'stack-chart';
+            const maxTotal = Math.max(1, ...years.map(y =>
+                Object.values(byYearType[y] || {}).reduce((a, b) => a + b.km, 0)));
+            years.forEach(y => {
+                const col = document.createElement('div');
+                col.className = 'stack-col';
+                ['Railway', 'Airline', 'Other'].forEach(t => {
+                    const entry = (byYearType[y] || {})[t];
+                    if (!entry || !entry.km) return;
+                    const seg = document.createElement('div');
+                    seg.className = 'stack-seg';
+                    seg.style.height = `${(entry.km / maxTotal) * 100}%`;
+                    seg.style.background = typeColor(t);
+                    bindTooltip(seg, `${y} 年 · ${TYPE_LABEL[t]}：${fmt(entry.km)} km（${entry.count} 次）`);
+                    col.appendChild(seg);
+                });
+                chart.appendChild(col);
+            });
+            container.appendChild(chart);
+            const labels = document.createElement('div');
+            labels.className = 'stack-labels';
+            labels.innerHTML = years.map(y => `<span>${y}</span>`).join('');
+            container.appendChild(labels);
+        }
+
+        function renderHBarList(container, rows, colorFn, unit = '次') {
+            const max = Math.max(1, ...rows.map(r => r.value));
+            rows.forEach(r => {
+                const row = document.createElement('div');
+                row.className = 'hbar-row';
+                row.innerHTML = `
+                    <div class="name" title="${r.label}">${r.label}</div>
+                    <div class="track"><div class="fill"></div></div>
+                    <div class="val">${fmt(r.value)}${unit === 'km' ? ' km' : ''}</div>
+                `;
+                const fill = row.querySelector('.fill');
+                fill.style.width = `${(r.value / max) * 100}%`;
+                fill.style.background = colorFn ? colorFn(r) : 'var(--series-railway)';
+                const detail = unit === 'km' && typeof r.count === 'number'
+                    ? `${r.label}：${fmt(r.value)} km（${r.count} 次）`
+                    : unit === '次' && typeof r.km === 'number'
+                        ? `${r.label}：${fmt(r.value)} 次（${fmt(r.km)} km）`
+                        : `${r.label}：${fmt(r.value)} ${unit}`;
+                bindTooltip(fill, detail);
+                container.appendChild(row);
+            });
+        }
+
+        function renderCatBars(container, rows, unit) {
+            const chart = document.createElement('div');
+            chart.className = 'cat-bars';
+            const max = Math.max(1, ...rows.map(r => r.value));
+            rows.forEach(r => {
+                const col = document.createElement('div');
+                col.className = 'cat-bar-col';
+                const barH = Math.max(4, (r.value / max) * 90);
+                col.innerHTML = `
+                    <div class="cap">${fmt(r.value, 1)}${unit}</div>
+                    <div class="bar" style="height:${barH}px;background:${typeColor(r.type)}"></div>
+                    <div class="name">${TYPE_LABEL[r.type]}</div>
+                `;
+                bindTooltip(col.querySelector('.bar'), `${TYPE_LABEL[r.type]}：${fmt(r.value, 1)} ${unit}`);
+                chart.appendChild(col);
+            });
+            container.appendChild(chart);
+        }
+
+        async function main() {
+            const app = document.getElementById('app');
+            let segments;
+            try {
+                const res = await fetch('./configs/travelSegments.json');
+                if (!res.ok) throw new Error(res.status);
+                segments = await res.json();
+            } catch (err) {
+                app.innerHTML = `<p class="empty-note">无法加载 configs/travelSegments.json（${err}）。
+                    若通过 file:// 直接打开本页，浏览器会拦截本地 fetch 请求 —— 请改用本地 HTTP 服务器
+                    （例如 <code>python3 -m http.server</code>）访问本页，或部署到静态网站后再打开。</p>`;
+                return;
+            }
+            if (!Array.isArray(segments) || segments.length === 0) {
+                app.innerHTML = '<p class="empty-note">暂无行程数据。</p>';
+                return;
+            }
+
+            // ---- 汇总 ----
+            const cities = new Set();
+            const vehicles = new Set();
+            let totalKm = 0, totalHours = 0, totalPrice = 0;
+            const byYearType = {};
+            const routeCount = {};
+            const typeDistanceHours = { Railway: [0, 0], Airline: [0, 0], Other: [0, 0] };
+            const typeDistanceTotal = { Railway: 0, Airline: 0, Other: 0 };
+            const yearSpend = {};
+
+            segments.forEach(seg => {
+                cities.add(seg.from);
+                cities.add(seg.to);
+                if (seg.vehicle) vehicles.add(seg.vehicle);
+                const km = parseDistanceKm(seg.distance);
+                const hrs = parseDurationHours(seg.duration);
+                totalKm += km;
+                totalHours += hrs;
+                if (typeof seg.price === 'number') totalPrice += seg.price;
+
+                const year = seg.date.slice(0, 4);
+                byYearType[year] = byYearType[year] || {};
+                const yt = byYearType[year][seg.type] || { km: 0, count: 0 };
+                yt.km += km;
+                yt.count += 1;
+                byYearType[year][seg.type] = yt;
+
+                const key = [seg.from, seg.to].sort().join(' ↔ ');
+                const rt = routeCount[key] || { km: 0, count: 0, types: {} };
+                rt.km += km;
+                rt.count += 1;
+                rt.types[seg.type] = (rt.types[seg.type] || 0) + 1;
+                routeCount[key] = rt;
+
+                if (typeDistanceTotal[seg.type] !== undefined) typeDistanceTotal[seg.type] += km;
+
+                if (km > 0 && hrs > 0 && typeDistanceHours[seg.type]) {
+                    typeDistanceHours[seg.type][0] += km;
+                    typeDistanceHours[seg.type][1] += hrs;
+                }
+
+                if (typeof seg.price === 'number') {
+                    yearSpend[year] = (yearSpend[year] || 0) + seg.price;
+                }
+            });
+
+            const years = Object.keys(byYearType).sort();
+
+            // ---- Hero 统计 ----
+            const hero = document.createElement('div');
+            hero.className = 'hero-grid';
+            hero.appendChild(statTile('总行程', fmt(segments.length), '次'));
+            hero.appendChild(statTile('总里程', fmt(totalKm), 'km'));
+            hero.appendChild(statTile('总时长', fmt(totalHours), '小时'));
+            hero.appendChild(statTile('总花费', '¥' + fmt(totalPrice)));
+            hero.appendChild(statTile('到访站点', fmt(cities.size), '个'));
+            hero.appendChild(statTile('出行年份跨度', `${years[0]}–${years[years.length - 1]}`));
+            app.appendChild(hero);
+
+            // ---- 年度出行趋势 ----
+            const s1 = document.createElement('section');
+            s1.innerHTML = '<h2>年度出行趋势</h2><p class="sub">按年份统计各类型累计里程（km）</p>';
+            const c1 = document.createElement('div');
+            c1.className = 'card';
+            c1.appendChild(legendRow(['Railway', 'Airline', 'Other']));
+            renderStackChart(c1, years, byYearType);
+            s1.appendChild(c1);
+            app.appendChild(s1);
+
+            // ---- 分类型统计（占比 + 平均时速） ----
+            const s2 = document.createElement('section');
+            s2.innerHTML = '<h2>分类型统计</h2><p class="sub">出行里程占比与平均时速对比</p>';
+            const twoCol = document.createElement('div');
+            twoCol.className = 'two-col';
+
+            const c2a = document.createElement('div');
+            c2a.className = 'card';
+            c2a.innerHTML = '<div style="font-size:13px;color:var(--text-secondary);margin-bottom:8px">出行里程</div>';
+            const typeCounts = ['Railway', 'Airline', 'Other']
+                .map(t => ({
+                    label: TYPE_LABEL[t],
+                    value: typeDistanceTotal[t],
+                    count: segments.filter(s => s.type === t).length,
+                    type: t,
+                }))
+                .filter(r => r.value > 0);
+            renderHBarList(c2a, typeCounts, r => typeColor(r.type), 'km');
+            twoCol.appendChild(c2a);
+
+            const c2b = document.createElement('div');
+            c2b.className = 'card';
+            c2b.innerHTML = '<div style="font-size:13px;color:var(--text-secondary);margin-bottom:8px">平均时速（km/h）</div>';
+            const speedRows = Object.entries(typeDistanceHours)
+                .filter(([, [km, hrs]]) => hrs > 0)
+                .map(([type, [km, hrs]]) => ({ type, value: km / hrs }));
+            renderCatBars(c2b, speedRows, ' km/h');
+            twoCol.appendChild(c2b);
+
+            s2.appendChild(twoCol);
+            app.appendChild(s2);
+
+            // ---- 常去路线 ----
+            const s3 = document.createElement('section');
+            s3.innerHTML = '<h2>常去路线 Top 9</h2><p class="sub">按站点对（不分方向）合并出行次数</p>';
+            const c3 = document.createElement('div');
+            c3.className = 'card';
+            const topRoutes = Object.entries(routeCount)
+                .sort((a, b) => b[1].count - a[1].count).slice(0, 9)
+                .map(([label, entry]) => ({ label, value: entry.count, km: entry.km, type: dominantType(entry.types) }));
+            renderHBarList(c3, topRoutes, r => typeColor(r.type), '次');
+            s3.appendChild(c3);
+            app.appendChild(s3);
+
+            // ---- 年度花费 ----
+            const yearsWithSpend = years.filter(y => yearSpend[y] > 0);
+            if (yearsWithSpend.length) {
+                const s5 = document.createElement('section');
+                s5.innerHTML = '<h2>年度花费</h2><p class="sub">按年份汇总票价（¥）</p>';
+                const c5 = document.createElement('div');
+                c5.className = 'card';
+                const maxSpend = Math.max(...yearsWithSpend.map(y => yearSpend[y]));
+                yearsWithSpend.forEach(y => {
+                    const row = document.createElement('div');
+                    row.className = 'hbar-row';
+                    row.innerHTML = `
+                        <div class="name">${y}</div>
+                        <div class="track"><div class="fill"></div></div>
+                        <div class="val">¥${fmt(yearSpend[y])}</div>
+                    `;
+                    const fill = row.querySelector('.fill');
+                    fill.style.width = `${(yearSpend[y] / maxSpend) * 100}%`;
+                    fill.style.background = 'var(--series-railway)';
+                    bindTooltip(fill, `${y} 年：¥${fmt(yearSpend[y])}`);
+                    c5.appendChild(row);
+                });
+                s5.appendChild(c5);
+                app.appendChild(s5);
+            }
+
+            document.getElementById('footer').textContent =
+                `共 ${segments.length} 条行程记录 · 数据截至 ${years[years.length - 1]} 年`;
+        }
+
+        main();
+    </script>
+</body>
+
+</html>
